@@ -54,6 +54,9 @@ echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 
 ## Архітектура (коротко)
 
+Правила шарів і межі відповідальності: [ARCHITECTURE.md](ARCHITECTURE.md)
+(перевіряються автоматично тестами `tests/test_architecture.py`).
+
 - `bot/handlers/` — Telegram-хендлери (aiogram 3, long polling)
 - `bot/services/llm/` — абстракція LLM (`base.py`) + реалізація Gemini (`gemini.py`).
   Замінити провайдера = написати один клас.
