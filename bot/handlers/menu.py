@@ -1,4 +1,5 @@
 from datetime import date
+from html import escape
 
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
@@ -10,10 +11,20 @@ from bot.db.models import MEAL_LABELS, User
 from bot.keyboards.common import BTN_MENU, MenuCB, menu_keyboard
 from bot.rendering import render_menu_day, render_shopping_list
 from bot.services import menu_planner, shopping_list
-from bot.services.llm.base import LLMClient, QueryIntent
+from bot.services.llm.base import LLMClient, LLMError, QueryIntent
 from bot.utils import send_long
 
 router = Router(name="menu")
+
+AI_UNAVAILABLE = "Сервіс AI зараз недоступний, спробуйте за хвилину 🙏"
+FOREIGN_MENU = "Це меню складене в іншій групі — ви переключились. Складіть нове 🙂"
+
+
+def _plan_for_active_group(data: dict, user: User) -> dict | None:
+    plan = data.get("menu_plan")
+    if not plan or plan.get("group_id") != user.active_group_id:
+        return None
+    return plan
 
 
 @router.message(F.text == BTN_MENU)
@@ -39,21 +50,32 @@ async def run_menu_flow(
     if user.active_group_id is None:
         return
     progress = await message.answer("🧮 Складаю меню з вашої бази…")
-    result, recipes = await menu_planner.plan_menu(
-        session, llm, user.active_group_id, text, intent
-    )
+    try:
+        result, recipes = await menu_planner.plan_menu(
+            session, llm, user.active_group_id, text, intent
+        )
+    except LLMError:
+        await progress.edit_text(AI_UNAVAILABLE)
+        return
     await progress.delete()
 
     if not result.slots:
         await message.answer(
-            result.comment
+            escape(result.comment or "")
             or "Поки не можу скласти меню — у базі замало рецептів. Додайте ще 😉"
         )
         return
 
     slots = [s.model_dump() for s in result.slots]
     days = sorted({s["day"] for s in slots})
-    await state.update_data(menu_plan={"slots": slots, "days": len(days)})
+    await state.update_data(
+        menu_plan={
+            "slots": slots,
+            "days": len(days),
+            "group_id": user.active_group_id,
+            "persons": intent.persons,
+        }
+    )
 
     for day in days:
         day_slots = [s for s in slots if s["day"] == day]
@@ -65,24 +87,27 @@ async def run_menu_flow(
         )
     hint = "Щоб замінити позицію, напишіть, наприклад: «заміни вечерю дня 1»."
     if result.comment:
-        hint = f"ℹ️ {result.comment}\n\n{hint}"
+        hint = f"ℹ️ {escape(result.comment)}\n\n{hint}"
     await message.answer(hint)
 
 
 @router.callback_query(MenuCB.filter(F.action == "shop"))
 async def send_shopping_list(
-    query: CallbackQuery, state: FSMContext, session: AsyncSession
+    query: CallbackQuery, state: FSMContext, session: AsyncSession, user: User
 ) -> None:
     data = await state.get_data()
-    plan = data.get("menu_plan")
+    plan = _plan_for_active_group(data, user)
     await query.answer()
-    if not plan or not isinstance(query.message, Message):
-        if isinstance(query.message, Message):
-            await query.message.answer("Активного меню немає — складіть нове.")
+    if not isinstance(query.message, Message):
+        return
+    if not plan:
+        await query.message.answer(
+            FOREIGN_MENU if data.get("menu_plan") else "Активного меню немає — складіть нове."
+        )
         return
     ingredient_lists = []
     for slot in plan["slots"]:
-        recipe = await repo.get_recipe(session, slot["recipe_id"])
+        recipe = await repo.get_recipe(session, slot["recipe_id"], user.active_group_id)
         if recipe:
             ingredient_lists.append(recipe.ingredients)
     lines = shopping_list.aggregate(ingredient_lists)
@@ -90,7 +115,8 @@ async def send_shopping_list(
         await query.message.answer("У рецептах меню немає інгредієнтів 🤷")
         return
     await send_long(
-        query.message, render_shopping_list(lines, plan.get("days", 1))
+        query.message,
+        render_shopping_list(lines, plan.get("days", 1), plan.get("persons")),
     )
 
 
@@ -99,9 +125,12 @@ async def take_menu(
     query: CallbackQuery, state: FSMContext, session: AsyncSession, user: User
 ) -> None:
     data = await state.get_data()
-    plan = data.get("menu_plan")
+    plan = _plan_for_active_group(data, user)
     if not plan or user.active_group_id is None:
-        await query.answer("Активного меню немає", show_alert=True)
+        await query.answer(
+            FOREIGN_MENU if data.get("menu_plan") else "Активного меню немає",
+            show_alert=True,
+        )
         return
     for slot in plan["slots"]:
         await repo.record_serve(
@@ -125,10 +154,12 @@ async def run_replace_flow(
     intent: QueryIntent,
 ) -> None:
     data = await state.get_data()
-    plan = data.get("menu_plan")
+    plan = _plan_for_active_group(data, user)
     if not plan or user.active_group_id is None:
         await message.answer(
-            "Активного меню немає. Спершу складіть меню, наприклад: «меню на 2 дні»."
+            FOREIGN_MENU
+            if data.get("menu_plan")
+            else "Активного меню немає. Спершу складіть меню, наприклад: «меню на 2 дні»."
         )
         return
     day = intent.replace_day or 1
@@ -142,9 +173,13 @@ async def run_replace_flow(
         )
         return
 
-    new_id, recipes = await menu_planner.replace_slot(
-        session, llm, user.active_group_id, text, intent, plan["slots"]
-    )
+    try:
+        new_id, recipes = await menu_planner.replace_slot(
+            session, llm, user.active_group_id, text, intent, plan["slots"]
+        )
+    except LLMError:
+        await message.answer(AI_UNAVAILABLE)
+        return
     if new_id is None:
         await message.answer("Не знайшов, чим замінити — у базі більше немає підходящих страв.")
         return
@@ -153,7 +188,7 @@ async def run_replace_flow(
     day_slots = [s for s in plan["slots"] if s["day"] == day]
     for slot in day_slots:
         if slot["recipe_id"] not in recipes:
-            recipe = await repo.get_recipe(session, slot["recipe_id"])
+            recipe = await repo.get_recipe(session, slot["recipe_id"], user.active_group_id)
             if recipe:
                 recipes[recipe.id] = recipe
     await message.answer("Готово, замінив! Оновлений день:")

@@ -46,21 +46,40 @@ def _is_property(func: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
     )
 
 
+def _is_trivial_property(func: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+    """Просте read-only property: (docstring +) один return, без присвоєнь/await."""
+    if isinstance(func, ast.AsyncFunctionDef):
+        return False
+    body = list(func.body)
+    if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant):
+        body = body[1:]  # docstring
+    if len(body) != 1 or not isinstance(body[0], ast.Return):
+        return False
+    return not any(isinstance(n, ast.Await) for n in ast.walk(body[0]))
+
+
+ALLOWED_MODEL_DUNDERS = {"__repr__", "__str__"}
+
+
 def test_models_are_data_only():
-    """Моделі — лише колонки та прості @property, без методів з логікою."""
+    """Моделі — лише колонки та прості read-only @property, без методів з логікою."""
     tree = _parse(BOT / "db" / "models.py")
     offenders = []
     for node in tree.body:
         if not isinstance(node, ast.ClassDef):
             continue
         for item in node.body:
-            if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                if item.name.startswith("__") or _is_property(item):
-                    continue
-                offenders.append(f"{node.name}.{item.name}")
+            if not isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            if item.name.startswith("__") and item.name in ALLOWED_MODEL_DUNDERS:
+                continue
+            if _is_property(item) and _is_trivial_property(item):
+                continue
+            offenders.append(f"{node.name}.{item.name}")
     assert not offenders, (
-        f"Моделі обростають логікою: {offenders}. "
-        "Перенесіть її у bot/db/repo.py або bot/services/ (ARCHITECTURE.md, п.1)."
+        f"Моделі обростають логікою: {offenders}. Дозволені лише прості read-only "
+        "@property (один return) та __repr__/__str__. Логіку перенесіть у "
+        "bot/db/repo.py або bot/services/ (ARCHITECTURE.md, п.1)."
     )
 
 
@@ -107,14 +126,29 @@ def test_handlers_use_repo_not_raw_sql():
 
 
 def test_repo_is_the_only_sql_entry_point():
-    sql_names = {"select", "delete", "update", "insert", "text"}
+    # Пласкі імена + проксі-модулі, через які можна дістати ті самі конструкції
+    sql_names = {"select", "delete", "update", "insert", "text", "sql", "orm", "expression"}
     offenders = []
     for path in sorted(BOT.rglob("*.py")):
         if path == BOT / "db" / "repo.py":
             continue
-        used = _imported_names_from(_parse(path), "sqlalchemy") & sql_names
+        tree = _parse(path)
+        used = _imported_names_from(tree, "sqlalchemy") & sql_names
         if used:
             offenders.append(f"{path.relative_to(ROOT)}: {sorted(used)}")
+        # `import sqlalchemy as sa` дає доступ до sa.select(...) в обхід перевірки
+        module_imports = {
+            alias.name
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Import)
+            for alias in node.names
+            if alias.name.split(".")[0] == "sqlalchemy"
+        }
+        if module_imports:
+            offenders.append(
+                f"{path.relative_to(ROOT)}: import {sorted(module_imports)} "
+                "(використовуйте точкові from-імпорти, SQL — лише в repo.py)"
+            )
     assert not offenders, (
         f"SQL-конструкції поза repo.py: {offenders} (ARCHITECTURE.md, п.2)."
     )

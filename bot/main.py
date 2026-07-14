@@ -28,6 +28,13 @@ def run_migrations() -> None:
 
 async def main() -> None:
     settings = get_settings()
+    if settings.allow_all:
+        logging.warning("ALLOWED_USER_IDS='*' — бот відкритий для ВСІХ користувачів!")
+    elif not settings.allowed_ids:
+        logging.warning(
+            "ALLOWED_USER_IDS порожній — бот нікого не пускає. "
+            "Вкажіть Telegram id через кому або '*' для відкритого доступу."
+        )
     await asyncio.to_thread(run_migrations)
 
     bot = Bot(

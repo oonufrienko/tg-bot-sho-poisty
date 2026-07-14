@@ -119,12 +119,18 @@ async def add_recipe(
             RecipeMedia(recipe_id=recipe.id, tg_file_id=file_id, media_type=media_type)
         )
     await session.commit()
-    return await get_recipe(session, recipe.id)  # type: ignore[return-value]
+    return await get_recipe(session, recipe.id, group_id)  # type: ignore[return-value]
 
 
-async def get_recipe(session: AsyncSession, recipe_id: int) -> Recipe | None:
+async def get_recipe(
+    session: AsyncSession, recipe_id: int, group_id: int
+) -> Recipe | None:
+    """recipe_id приходить із callback-data (клієнтські дані) — завжди
+    перевіряємо належність рецепта групі, інакше можливий доступ до чужої бази."""
     return (
-        await session.execute(select(Recipe).where(Recipe.id == recipe_id))
+        await session.execute(
+            select(Recipe).where(Recipe.id == recipe_id, Recipe.group_id == group_id)
+        )
     ).scalar_one_or_none()
 
 

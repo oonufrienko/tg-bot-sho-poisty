@@ -51,11 +51,17 @@ def render_menu_day(day: int, slots: list[dict], recipes: dict[int, Recipe]) -> 
     return "\n".join(lines)
 
 
-def render_shopping_list(lines: list[str], days: int) -> str:
+def render_shopping_list(lines: list[str], days: int, persons: int | None = None) -> str:
     period = "день" if days == 1 else f"{days} дн."
     header = f"🛒 <b>Список покупок ({period})</b>\n"
     body = "\n".join(f"☐ {escape(line)}" for line in lines)
-    footer = "\n\nПерешліть це повідомлення тому, хто йде в магазин 😉"
+    footer = ""
+    if persons:
+        footer += (
+            f"\n\n⚠️ Кількості взяті з рецептів як є — "
+            f"на {persons} персон не масштабуються."
+        )
+    footer += "\n\nПерешліть це повідомлення тому, хто йде в магазин 😉"
     return header + body + footer
 
 

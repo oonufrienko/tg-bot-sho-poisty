@@ -12,6 +12,11 @@ DENIED_TEXT = (
     "Це приватний сімейний бот 🙈\n"
     "Попросіть власника додати ваш Telegram id у список дозволених."
 )
+NOT_CONFIGURED_TEXT = (
+    "Доступ до бота ще не налаштовано 🔒\n"
+    "Власнику: вкажіть Telegram id у ALLOWED_USER_IDS у файлі .env "
+    "(або '*' для відкритого доступу) і перезапустіть бота."
+)
 
 
 class AccessDbMiddleware(BaseMiddleware):
@@ -27,12 +32,14 @@ class AccessDbMiddleware(BaseMiddleware):
         if tg_user is None:
             return await handler(event, data)
 
-        allowed = get_settings().allowed_ids
-        if allowed and tg_user.id not in allowed:
+        settings = get_settings()
+        if not settings.allow_all and tg_user.id not in settings.allowed_ids:
+            # Fail-closed: порожній whitelist нікого не пускає
+            text = DENIED_TEXT if settings.allowed_ids else NOT_CONFIGURED_TEXT
             if isinstance(event, Message):
-                await event.answer(DENIED_TEXT)
+                await event.answer(text)
             elif isinstance(event, CallbackQuery):
-                await event.answer(DENIED_TEXT, show_alert=True)
+                await event.answer(text, show_alert=True)
             return None
 
         async with get_session_factory()() as session:

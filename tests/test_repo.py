@@ -53,6 +53,14 @@ async def test_groups_are_isolated(session):
     assert len(ours) == 1
 
 
+async def test_get_recipe_enforces_group_isolation(session):
+    """recipe_id з callback-data не має відкривати рецепти чужої групи."""
+    user, recipe = await _make_user_with_recipe(session, tg_id=1)
+    stranger = await repo.ensure_user(session, 2, "Сусідка")
+    assert await repo.get_recipe(session, recipe.id, user.active_group_id) is not None
+    assert await repo.get_recipe(session, recipe.id, stranger.active_group_id) is None
+
+
 async def test_join_group_by_token_shares_base(session):
     user1, recipe = await _make_user_with_recipe(session, tg_id=1)
     group = await repo.get_group(session, user1.active_group_id)

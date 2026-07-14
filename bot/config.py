@@ -13,7 +13,14 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     @property
+    def allow_all(self) -> bool:
+        """Відкритий доступ — лише за явним ALLOWED_USER_IDS=* (dev-режим)."""
+        return self.allowed_user_ids.strip() == "*"
+
+    @property
     def allowed_ids(self) -> frozenset[int]:
+        if self.allow_all:
+            return frozenset()
         return frozenset(
             int(part) for part in self.allowed_user_ids.replace(" ", "").split(",") if part
         )
