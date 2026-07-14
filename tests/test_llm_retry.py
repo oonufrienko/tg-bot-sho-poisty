@@ -35,8 +35,13 @@ def test_transient_errors_use_standard_delay(status):
 
 @pytest.fixture(autouse=True)
 def _no_sleep(monkeypatch):
-    monkeypatch.setattr(retry, "RETRY_DELAY", 0.0)
-    monkeypatch.setattr(retry, "QUOTA_RETRY_DELAY", 0.0)
+    """Робить ретраї миттєвими, не зачіпаючи самі константи затримки
+    (тест test_quota_uses_longer_delay порівнює їхні величини)."""
+
+    async def _instant(_seconds):
+        return None
+
+    monkeypatch.setattr(retry.asyncio, "sleep", _instant)
 
 
 async def test_permanent_error_fails_fast():
