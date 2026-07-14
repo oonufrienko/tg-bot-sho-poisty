@@ -6,3 +6,6 @@ __pycache__/
 .pytest_cache/
 *.egg-info/
 graphify-out/.graphify_*
+# Generated knowledge graph (rebuild locally via /graphify)
+graphify-out/cache/
+graphify-out/cost.json
