@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.db.models import (
@@ -120,6 +120,63 @@ async def add_recipe(
         )
     await session.commit()
     return await get_recipe(session, recipe.id, group_id)  # type: ignore[return-value]
+
+
+def _norm_title(title: str) -> str:
+    """Нормалізація для порівняння назв: SQL lower() не вміє кирилицю."""
+    return " ".join(title.split()).casefold()
+
+
+async def find_recipe_by_title(
+    session: AsyncSession, group_id: int, title: str
+) -> Recipe | None:
+    wanted = _norm_title(title)
+    rows = await session.execute(select(Recipe).where(Recipe.group_id == group_id))
+    for recipe in rows.scalars():
+        if _norm_title(recipe.title) == wanted:
+            return recipe
+    return None
+
+
+async def move_recipes(
+    session: AsyncSession, from_group_id: int, to_group_id: int
+) -> tuple[int, int]:
+    """Переносить рецепти між групами разом з історією подач.
+
+    Рецепт, чия назва (нормалізовано) вже є в цільовій групі, пропускається —
+    однакова назва не гарантує однаковий вміст, тому нічого не видаляємо.
+    Повертає (перенесено, пропущено_дублікатів).
+    """
+    target_titles = {
+        _norm_title(title)
+        for title in (
+            await session.execute(
+                select(Recipe.title).where(Recipe.group_id == to_group_id)
+            )
+        ).scalars()
+    }
+    rows = await session.execute(select(Recipe).where(Recipe.group_id == from_group_id))
+    moved_ids: list[int] = []
+    skipped = 0
+    for recipe in rows.scalars():
+        norm = _norm_title(recipe.title)
+        if norm in target_titles:
+            skipped += 1
+            continue
+        recipe.group_id = to_group_id
+        target_titles.add(norm)
+        moved_ids.append(recipe.id)
+    if moved_ids:
+        await session.execute(
+            update(ServeHistory)
+            .where(
+                ServeHistory.group_id == from_group_id,
+                ServeHistory.recipe_id.in_(moved_ids),
+            )
+            .values(group_id=to_group_id)
+        )
+    await session.commit()
+    return len(moved_ids), skipped
 
 
 async def get_recipe(

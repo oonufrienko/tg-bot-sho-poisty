@@ -23,12 +23,13 @@ from bot.keyboards.common import (
 from bot.rendering import render_recipe
 from bot.services import retrieval
 from bot.services.ingestion import collect_input
-from bot.services.llm.base import LLMClient, LLMError, QueryIntent
+from bot.services.llm.base import LLMClient, LLMError, LLMQuotaError, QueryIntent
 from bot.utils import send_long
 
 router = Router(name="query")
 
 AI_UNAVAILABLE = "Сервіс AI зараз недоступний, спробуйте за хвилину 🙏"
+AI_RATE_LIMITED = "Перевищено ліміт запитів AI 🕐 Зачекайте хвилину і спробуйте ще раз."
 FOREIGN_RECIPE = "Ця страва з іншої групи — ви переключились. Спитайте мене заново 🙂"
 
 
@@ -194,6 +195,8 @@ async def another_dish(
             intent,
             exclude_ids=set(data.get("q_shown", [])),
         )
+    except LLMQuotaError:
+        await query.message.answer(AI_RATE_LIMITED)
     except LLMError:
         await query.message.answer(AI_UNAVAILABLE)
 
@@ -257,5 +260,7 @@ async def free_text(
                 await message.answer("Які страви показати?", reply_markup=recent_keyboard())
             case _:
                 await message.answer(HELP)
+    except LLMQuotaError:
+        await message.answer(AI_RATE_LIMITED)
     except LLMError:
         await message.answer(AI_UNAVAILABLE)

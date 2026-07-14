@@ -9,6 +9,7 @@ dependencies = [
     "aiosqlite>=0.20",
     "alembic>=1.13",
     "google-genai>=1.0",
+    "openai>=1.60",
     "pydantic>=2.7",
     "pydantic-settings>=2.3",
 ]

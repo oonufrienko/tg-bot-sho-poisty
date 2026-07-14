@@ -53,6 +53,33 @@ class RecentCB(CallbackData, prefix="recent"):
     kind: str  # added | served
 
 
+class MoveRecipesCB(CallbackData, prefix="mv"):
+    action: str  # move | skip
+    from_group_id: int = 0
+    to_group_id: int = 0
+
+
+def move_recipes_keyboard(from_group_id: int, to_group_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="✅ Так, перенести",
+                    callback_data=MoveRecipesCB(
+                        action="move",
+                        from_group_id=from_group_id,
+                        to_group_id=to_group_id,
+                    ).pack(),
+                ),
+                InlineKeyboardButton(
+                    text="Ні, залишити",
+                    callback_data=MoveRecipesCB(action="skip").pack(),
+                ),
+            ]
+        ]
+    )
+
+
 def confirm_keyboard(selected: list[str], difficulty: int | None) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     for key, label in CATEGORIES.items():

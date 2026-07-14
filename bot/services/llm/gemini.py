@@ -1,6 +1,4 @@
-import asyncio
 import json
-import logging
 
 from google import genai
 from google.genai import types
@@ -9,18 +7,12 @@ from pydantic import BaseModel
 from bot.services.llm import prompts
 from bot.services.llm.base import (
     LLMClient,
-    LLMError,
     MenuPlanResult,
     QueryIntent,
     RecipeExtraction,
     SelectionResult,
 )
-
-logger = logging.getLogger(__name__)
-
-# Безкоштовний tier інколи відповідає 429/503 — робимо кілька спроб з паузою.
-RETRIES = 3
-RETRY_DELAY = 5.0
+from bot.services.llm.retry import run_with_retries
 
 
 class GeminiClient(LLMClient):
@@ -31,27 +23,24 @@ class GeminiClient(LLMClient):
     async def _generate[T: BaseModel](
         self, contents: list, schema: type[T], temperature: float = 0.2
     ) -> T:
-        last_error: Exception | None = None
-        for attempt in range(RETRIES):
-            try:
-                response = await self._client.aio.models.generate_content(
-                    model=self._model,
-                    contents=contents,
-                    config=types.GenerateContentConfig(
-                        response_mime_type="application/json",
-                        response_schema=schema,
-                        temperature=temperature,
-                    ),
-                )
-                if response.parsed is not None:
-                    return response.parsed  # type: ignore[return-value]
-                return schema.model_validate_json(response.text or "")
-            except Exception as exc:  # noqa: BLE001 — ретраїмо будь-який збій API
-                last_error = exc
-                logger.warning("Gemini attempt %s failed: %s", attempt + 1, exc)
-                if attempt < RETRIES - 1:
-                    await asyncio.sleep(RETRY_DELAY * (attempt + 1))
-        raise LLMError(f"Gemini не відповів після {RETRIES} спроб: {last_error}")
+        async def attempt() -> T:
+            response = await self._client.aio.models.generate_content(
+                model=self._model,
+                contents=contents,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=schema,
+                    temperature=temperature,
+                ),
+            )
+            if response.parsed is not None:
+                return response.parsed  # type: ignore[return-value]
+            return schema.model_validate_json(response.text or "")
+
+        # google.genai.errors.APIError має атрибут .code з HTTP-статусом
+        return await run_with_retries(
+            attempt, lambda exc: getattr(exc, "code", None), "Gemini"
+        )
 
     async def extract_recipe(
         self, text: str | None, files: list[tuple[bytes, str]]

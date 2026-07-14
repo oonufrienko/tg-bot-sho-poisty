@@ -8,8 +8,14 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.db import repo
-from bot.db.models import User
-from bot.keyboards.common import BTN_GROUP, GroupCB, main_keyboard
+from bot.db.models import Group, User
+from bot.keyboards.common import (
+    BTN_GROUP,
+    GroupCB,
+    MoveRecipesCB,
+    main_keyboard,
+    move_recipes_keyboard,
+)
 
 router = Router(name="group")
 
@@ -76,6 +82,29 @@ async def create_group_start(query: CallbackQuery, state: FSMContext) -> None:
         )
 
 
+async def offer_move_recipes(
+    message: Message,
+    session: AsyncSession,
+    user: User,
+    from_group_id: int | None,
+    to_group: Group,
+) -> None:
+    """Пропонує перенести рецепти зі старої групи користувача в нову/спільну."""
+    if from_group_id is None or from_group_id == to_group.id:
+        return
+    from_group = await repo.get_group(session, from_group_id)
+    if from_group is None or from_group.owner_id != user.tg_user_id:
+        return
+    recipes = await repo.group_recipes(session, from_group_id)
+    if not recipes:
+        return
+    await message.answer(
+        f"У групі «{escape(from_group.name)}» у вас {len(recipes)} рецепт(ів).\n"
+        f"Перенести їх у «{escape(to_group.name)}», щоб вони стали спільними?",
+        reply_markup=move_recipes_keyboard(from_group_id, to_group.id),
+    )
+
+
 @router.message(GroupStates.waiting_name, F.text)
 async def create_group_finish(
     message: Message, state: FSMContext, session: AsyncSession, user: User
@@ -84,6 +113,7 @@ async def create_group_finish(
     if not name:
         await message.answer("Надішліть назву групи текстом.")
         return
+    prev_group_id = user.active_group_id
     group = await repo.create_group(session, name, user)
     await repo.set_active_group(session, user, group.id)
     await state.clear()
@@ -94,6 +124,40 @@ async def create_group_finish(
         f"Запрошення для рідних (просто перешліть їм):\n{link}",
         reply_markup=main_keyboard(),
     )
+    await offer_move_recipes(message, session, user, prev_group_id, group)
+
+
+@router.callback_query(MoveRecipesCB.filter(F.action == "move"))
+async def move_recipes_confirm(
+    query: CallbackQuery, callback_data: MoveRecipesCB, session: AsyncSession, user: User
+) -> None:
+    from_group = await repo.get_group(session, callback_data.from_group_id)
+    member_ids = {g.id for g in await repo.user_groups(session, user.tg_user_id)}
+    if (
+        from_group is None
+        or from_group.owner_id != user.tg_user_id
+        or callback_data.to_group_id not in member_ids
+    ):
+        await query.answer("Немає доступу до цих груп", show_alert=True)
+        return
+    moved, skipped = await repo.move_recipes(
+        session, callback_data.from_group_id, callback_data.to_group_id
+    )
+    await query.answer()
+    if isinstance(query.message, Message):
+        await query.message.edit_reply_markup(reply_markup=None)
+        text = f"Перенесено {moved} рецепт(ів) ✅"
+        if skipped:
+            text += f"\nПропущено {skipped} — рецепти з такими назвами вже є в групі."
+        await query.message.answer(text)
+
+
+@router.callback_query(MoveRecipesCB.filter(F.action == "skip"))
+async def move_recipes_skip(query: CallbackQuery) -> None:
+    await query.answer()
+    if isinstance(query.message, Message):
+        await query.message.edit_reply_markup(reply_markup=None)
+        await query.message.answer("Добре, залишаю як є 👌")
 
 
 @router.callback_query(GroupCB.filter(F.action == "invite"))

@@ -84,6 +84,10 @@ class LLMError(Exception):
     pass
 
 
+class LLMQuotaError(LLMError):
+    """Перевищено ліміт запитів провайдера (HTTP 429)."""
+
+
 class LLMClient(ABC):
     """Абстракція над провайдером — щоб згодом замінити Gemini на Claude."""
 

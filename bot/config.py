@@ -5,8 +5,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     bot_token: str
-    gemini_api_key: str
+    gemini_api_key: str = ""
     gemini_model: str = "gemini-2.5-flash"
+    # За наявності OPENROUTER_API_KEY бот працює через OpenRouter (пріоритет)
+    openrouter_api_key: str = ""
+    openrouter_model: str = "google/gemini-3.5-flash"
     allowed_user_ids: str = ""
     database_path: str = "data/bot.db"
 

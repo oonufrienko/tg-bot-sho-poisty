@@ -13,7 +13,9 @@ from alembic.config import Config as AlembicConfig
 from bot.config import get_settings
 from bot.handlers import add_recipe, group, menu, query, start
 from bot.middlewares import AccessDbMiddleware
+from bot.services.llm.base import LLMClient
 from bot.services.llm.gemini import GeminiClient
+from bot.services.llm.openrouter import OpenRouterClient
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s"
@@ -41,7 +43,15 @@ async def main() -> None:
         token=settings.bot_token,
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
-    llm = GeminiClient(settings.gemini_api_key, settings.gemini_model)
+    llm: LLMClient
+    if settings.openrouter_api_key:
+        llm = OpenRouterClient(settings.openrouter_api_key, settings.openrouter_model)
+        logging.info("LLM: OpenRouter, модель %s", settings.openrouter_model)
+    elif settings.gemini_api_key:
+        llm = GeminiClient(settings.gemini_api_key, settings.gemini_model)
+        logging.info("LLM: Gemini API, модель %s", settings.gemini_model)
+    else:
+        raise SystemExit("Потрібен OPENROUTER_API_KEY або GEMINI_API_KEY у .env")
     dp = Dispatcher(storage=MemoryStorage(), llm=llm)
 
     dp.message.outer_middleware(AccessDbMiddleware())

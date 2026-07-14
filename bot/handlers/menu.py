@@ -11,12 +11,13 @@ from bot.db.models import MEAL_LABELS, User
 from bot.keyboards.common import BTN_MENU, MenuCB, menu_keyboard
 from bot.rendering import render_menu_day, render_shopping_list
 from bot.services import menu_planner, shopping_list
-from bot.services.llm.base import LLMClient, LLMError, QueryIntent
+from bot.services.llm.base import LLMClient, LLMError, LLMQuotaError, QueryIntent
 from bot.utils import send_long
 
 router = Router(name="menu")
 
 AI_UNAVAILABLE = "Сервіс AI зараз недоступний, спробуйте за хвилину 🙏"
+AI_RATE_LIMITED = "Перевищено ліміт запитів AI 🕐 Зачекайте хвилину і спробуйте ще раз."
 FOREIGN_MENU = "Це меню складене в іншій групі — ви переключились. Складіть нове 🙂"
 
 
@@ -54,6 +55,9 @@ async def run_menu_flow(
         result, recipes = await menu_planner.plan_menu(
             session, llm, user.active_group_id, text, intent
         )
+    except LLMQuotaError:
+        await progress.edit_text(AI_RATE_LIMITED)
+        return
     except LLMError:
         await progress.edit_text(AI_UNAVAILABLE)
         return
@@ -177,6 +181,9 @@ async def run_replace_flow(
         new_id, recipes = await menu_planner.replace_slot(
             session, llm, user.active_group_id, text, intent, plan["slots"]
         )
+    except LLMQuotaError:
+        await message.answer(AI_RATE_LIMITED)
+        return
     except LLMError:
         await message.answer(AI_UNAVAILABLE)
         return

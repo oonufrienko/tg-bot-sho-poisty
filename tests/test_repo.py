@@ -71,6 +71,76 @@ async def test_join_group_by_token_shares_base(session):
     assert [r.id for r in shared] == [recipe.id]
 
 
+async def test_create_group_then_invite_shares_recipes(session):
+    """Сценарій бага: створив нову групу → переніс рецепти → запрошений їх бачить."""
+    user1, recipe = await _make_user_with_recipe(session, tg_id=1)
+    personal_group_id = user1.active_group_id
+    family = await repo.create_group(session, "Сім'я", user1)
+    await repo.set_active_group(session, user1, family.id)
+
+    moved, skipped = await repo.move_recipes(session, personal_group_id, family.id)
+    assert (moved, skipped) == (1, 0)
+
+    user2 = await repo.ensure_user(session, 2, "Дружина")
+    joined = await repo.join_group_by_token(session, family.invite_token, user2)
+    assert joined is not None
+    shared = await repo.group_recipes(session, user2.active_group_id)
+    assert [r.id for r in shared] == [recipe.id]
+    assert await repo.group_recipes(session, personal_group_id) == []
+
+
+async def test_move_recipes_transfers_serve_history(session):
+    user, recipe = await _make_user_with_recipe(session)
+    old_group_id = user.active_group_id
+    await repo.record_serve(
+        session,
+        group_id=old_group_id,
+        recipe_id=recipe.id,
+        user_id=user.tg_user_id,
+        meal_type="lunch",
+        served_on=date.today(),
+    )
+    family = await repo.create_group(session, "Сім'я", user)
+    await repo.move_recipes(session, old_group_id, family.id)
+    assert recipe.id in await repo.recently_served_ids(session, family.id, days=7)
+    assert await repo.recently_served_ids(session, old_group_id, days=7) == set()
+
+
+async def test_move_recipes_skips_duplicates_by_title(session):
+    """Дублікат за назвою (інший регістр/пробіли) лишається у старій групі."""
+    user, recipe = await _make_user_with_recipe(session)  # "Борщ"
+    old_group_id = user.active_group_id
+    family = await repo.create_group(session, "Сім'я", user)
+    await repo.add_recipe(
+        session,
+        group_id=family.id,
+        added_by=user.tg_user_id,
+        title="  борщ ",
+        ingredients=[],
+        steps="Інший варіант.",
+        categories=["lunch"],
+        difficulty=None,
+        calories=None,
+        source_type="text",
+        original_text=None,
+    )
+    moved, skipped = await repo.move_recipes(session, old_group_id, family.id)
+    assert (moved, skipped) == (0, 1)
+    left_behind = await repo.group_recipes(session, old_group_id)
+    assert [r.id for r in left_behind] == [recipe.id]
+
+
+async def test_find_recipe_by_title_normalizes_and_isolates(session):
+    user, recipe = await _make_user_with_recipe(session)  # "Борщ"
+    found = await repo.find_recipe_by_title(session, user.active_group_id, " борщ  ")
+    assert found is not None and found.id == recipe.id
+    stranger = await repo.ensure_user(session, 2, "Сусідка")
+    assert (
+        await repo.find_recipe_by_title(session, stranger.active_group_id, "Борщ")
+        is None
+    )
+
+
 async def test_no_repeat_rule_window(session):
     user, recipe = await _make_user_with_recipe(session)
     await repo.record_serve(

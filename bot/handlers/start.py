@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.db import repo
 from bot.db.models import User
+from bot.handlers.group import offer_move_recipes
 from bot.keyboards.common import main_keyboard
 
 router = Router(name="start")
@@ -44,6 +45,8 @@ async def start_with_link(
 ) -> None:
     args = command.args or ""
     if args.startswith("g_"):
+        # join_group_by_token перезаписує active_group_id — фіксуємо стару групу
+        prev_group_id = user.active_group_id
         group = await repo.join_group_by_token(session, args[2:], user)
         if group:
             await message.answer(
@@ -51,6 +54,7 @@ async def start_with_link(
                 "Тепер вам доступна спільна база рецептів цієї групи.",
                 reply_markup=main_keyboard(),
             )
+            await offer_move_recipes(message, session, user, prev_group_id, group)
             return
         await message.answer(
             "Це запрошення недійсне 😔 Попросіть нове посилання.",

@@ -1,9 +1,15 @@
 import json
+from html import escape
 
 from aiogram import Bot, F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.db import repo
@@ -11,7 +17,7 @@ from bot.db.models import User
 from bot.keyboards.common import BTN_ADD, ConfirmCB, confirm_keyboard
 from bot.rendering import render_extraction_card, render_recipe
 from bot.services.ingestion import RecipeInput, collect_input
-from bot.services.llm.base import LLMClient, LLMError, RecipeExtraction
+from bot.services.llm.base import LLMClient, LLMError, LLMQuotaError, RecipeExtraction
 from bot.utils import send_long
 
 router = Router(name="add_recipe")
@@ -46,6 +52,11 @@ async def start_recipe_flow(
     progress = await message.answer("🔍 Розпізнаю рецепт…")
     try:
         extraction = await llm.extract_recipe(recipe_input.text, recipe_input.files)
+    except LLMQuotaError:
+        await progress.edit_text(
+            "Перевищено ліміт запитів AI 🕐 Зачекайте хвилину і спробуйте ще раз."
+        )
+        return
     except LLMError:
         await progress.edit_text(
             "Не вдалося розпізнати — сервіс AI зараз недоступний. Спробуйте ще раз за хвилину."
@@ -81,6 +92,7 @@ async def show_confirmation(
         source_type=recipe_input.source_type,
         media=recipe_input.media,
         orig_text=recipe_input.text,
+        dup_ok=False,  # нова картка — перевірка дубліката спрацює заново
     )
     card = render_extraction_card(
         extraction.title,
@@ -186,6 +198,11 @@ async def amend_apply(
     progress = await message.answer("🔄 Оновлюю…")
     try:
         extraction = await llm.extract_recipe(merged_text, files)
+    except LLMQuotaError:
+        await progress.edit_text(
+            "Перевищено ліміт запитів AI 🕐 Зачекайте хвилину і спробуйте ще раз."
+        )
+        return
     except LLMError:
         await progress.edit_text("Сервіс AI недоступний, спробуйте за хвилину.")
         return
@@ -222,6 +239,30 @@ async def save_recipe(
         return
     if user.active_group_id is None:
         await query.answer("Немає активної групи", show_alert=True)
+        return
+
+    existing = await repo.find_recipe_by_title(session, user.active_group_id, title)
+    if existing is not None and not data.get("dup_ok"):
+        await state.update_data(dup_ok=True)
+        await query.answer()
+        if isinstance(query.message, Message):
+            await query.message.answer(
+                f"У базі вже є рецепт «{escape(existing.title)}» 🤔 Зберегти копію?",
+                reply_markup=InlineKeyboardMarkup(
+                    inline_keyboard=[
+                        [
+                            InlineKeyboardButton(
+                                text="✅ Зберегти все одно",
+                                callback_data=ConfirmCB(action="save").pack(),
+                            ),
+                            InlineKeyboardButton(
+                                text="❌ Скасувати",
+                                callback_data=ConfirmCB(action="cancel").pack(),
+                            ),
+                        ]
+                    ]
+                ),
+            )
         return
 
     recipe = await repo.add_recipe(
