@@ -66,7 +66,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 # tg-bot-sho-poisty
 
-A family-friendly Telegram bot with a recipe database (Python 3.12, aiogram 3, SQLite, Gemini).
+A family-friendly Telegram bot with a recipe database (Python 3.12, aiogram 3, SQLite). LLM via OpenRouter (`OPENROUTER_API_KEY`, model `google/gemini-3.5-flash`), falling back to the Gemini API (`GEMINI_API_KEY`) when OpenRouter is unset.
 
 - **You must follow the layer rules from [ARCHITECTURE.md](ARCHITECTURE.md).**
   These are verified by the tests in `tests/test_architecture.py` — the tests must
