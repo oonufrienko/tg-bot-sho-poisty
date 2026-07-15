@@ -61,6 +61,31 @@ async def test_get_recipe_enforces_group_isolation(session):
     assert await repo.get_recipe(session, recipe.id, stranger.active_group_id) is None
 
 
+async def test_delete_recipe_removes_serve_history(session):
+    """ServeHistory має FK на recipes.id без cascade — історію треба прибрати явно."""
+    user, recipe = await _make_user_with_recipe(session)
+    await repo.record_serve(
+        session,
+        group_id=user.active_group_id,
+        recipe_id=recipe.id,
+        user_id=user.tg_user_id,
+        meal_type="lunch",
+        served_on=date.today(),
+    )
+    assert await repo.delete_recipe(session, recipe.id, user.active_group_id) == "Борщ"
+    assert await repo.group_recipes(session, user.active_group_id) == []
+    assert await repo.recently_served_ids(session, user.active_group_id, days=7) == set()
+
+
+async def test_delete_recipe_enforces_group_isolation(session):
+    user, recipe = await _make_user_with_recipe(session, tg_id=1)
+    stranger = await repo.ensure_user(session, 2, "Сусідка")
+    assert await repo.delete_recipe(session, recipe.id, stranger.active_group_id) is None
+    assert [r.id for r in await repo.group_recipes(session, user.active_group_id)] == [
+        recipe.id
+    ]
+
+
 async def test_join_group_by_token_shares_base(session):
     user1, recipe = await _make_user_with_recipe(session, tg_id=1)
     group = await repo.get_group(session, user1.active_group_id)

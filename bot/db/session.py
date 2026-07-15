@@ -13,8 +13,13 @@ def get_session_factory() -> async_sessionmaker[AsyncSession]:
         _engine = create_async_engine(get_settings().db_url)
 
         @event.listens_for(_engine.sync_engine, "connect")
-        def _enable_foreign_keys(dbapi_connection, _record):
+        def _set_pragmas(dbapi_connection, _record):
             cursor = dbapi_connection.cursor()
+            # Сесія живе весь час хендлера, зокрема на час LLM-виклику (5-30с).
+            # Без WAL відкрита read-транзакція блокує паралельний запис, і кнопка
+            # «Зберегти» висить, доки не завершиться чужий запит до AI.
+            cursor.execute("PRAGMA journal_mode=WAL")
+            cursor.execute("PRAGMA busy_timeout=5000")
             cursor.execute("PRAGMA foreign_keys=ON")
             cursor.close()
 

@@ -191,6 +191,25 @@ async def get_recipe(
     ).scalar_one_or_none()
 
 
+async def delete_recipe(
+    session: AsyncSession, recipe_id: int, group_id: int
+) -> str | None:
+    """Видаляє рецепт групи. Повертає назву видаленого або None, якщо не знайдено."""
+    recipe = await get_recipe(session, recipe_id, group_id)
+    if recipe is None:
+        return None
+    title = recipe.title
+    # ServeHistory має FK на recipes.id без cascade, а foreign_keys=ON —
+    # тому історію треба прибрати вручну. categories/media підуть самі
+    # через cascade="all, delete-orphan" у моделі Recipe.
+    await session.execute(
+        delete(ServeHistory).where(ServeHistory.recipe_id == recipe_id)
+    )
+    await session.delete(recipe)
+    await session.commit()
+    return title
+
+
 async def group_recipes(
     session: AsyncSession, group_id: int, categories: list[str] | None = None
 ) -> list[Recipe]:

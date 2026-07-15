@@ -36,8 +36,12 @@ class ConfirmCB(CallbackData, prefix="rc"):
 
 
 class DishCB(CallbackData, prefix="dish"):
-    action: str  # take | another | choose
+    action: str  # take | another | choose | del | del_ok | del_no
     recipe_id: int = 0
+
+
+class AskCB(CallbackData, prefix="ask"):
+    key: str  # ключ із ASK_SUGGESTIONS
 
 
 class MenuCB(CallbackData, prefix="menu"):
@@ -131,6 +135,15 @@ def options_keyboard(options: list[tuple[int, str]]) -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
+def ask_keyboard(options: list[tuple[str, str]]) -> InlineKeyboardMarkup:
+    """Готові підказки під «Що приготувати?»: (key, напис)."""
+    builder = InlineKeyboardBuilder()
+    for key, label in options:
+        builder.button(text=label, callback_data=AskCB(key=key))
+    builder.adjust(2, 2, 1)
+    return builder.as_markup()
+
+
 def menu_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
@@ -140,6 +153,34 @@ def menu_keyboard() -> InlineKeyboardMarkup:
                 ),
                 InlineKeyboardButton(
                     text="✅ Беремо меню", callback_data=MenuCB(action="take").pack()
+                ),
+            ]
+        ]
+    )
+
+
+def recent_added_keyboard(options: list[tuple[int, str]]) -> InlineKeyboardMarkup:
+    """Список доданих страв із кнопкою видалення на кожній."""
+    builder = InlineKeyboardBuilder()
+    for recipe_id, title in options:
+        builder.button(
+            text=f"🗑 {title}"[:60],
+            callback_data=DishCB(action="del", recipe_id=recipe_id),
+        )
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+def delete_confirm_keyboard(recipe_id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="✅ Так, видалити",
+                    callback_data=DishCB(action="del_ok", recipe_id=recipe_id).pack(),
+                ),
+                InlineKeyboardButton(
+                    text="↩️ Ні", callback_data=DishCB(action="del_no").pack()
                 ),
             ]
         ]

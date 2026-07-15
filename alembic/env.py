@@ -8,7 +8,12 @@ from bot.db.models import Base
 
 config = context.config
 
-if config.config_file_name is not None:
+# fileConfig перевизначає root-логер за alembic.ini ([logger_root] level=WARN).
+# Коли міграції запускає main.py, це глушить усі INFO-логи бота, тому там
+# прапорець вимикають. Дефолт True — запуск alembic з CLI логується як раніше.
+if config.config_file_name is not None and config.attributes.get(
+    "configure_logger", True
+):
     fileConfig(config.config_file_name)
 
 config.set_main_option("sqlalchemy.url", get_settings().db_url_sync)

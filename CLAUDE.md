@@ -60,6 +60,21 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
+## 5. Definition of Done
+
+**A change is finished when everything that describes it agrees with it — not when the code works.**
+
+Before every commit, reconcile each of these with the change:
+
+- **Docs.** [ARCHITECTURE.md](ARCHITECTURE.md) for layer or boundary changes, [README.md](README.md) for setup, commands, and env vars, this file for workflow rules.
+- **Knowledge graph.** Re-run `/graphify` so `graphify-out/` reflects the new structure. A stale graph is worse than no graph: it answers questions confidently and wrongly.
+- **Tests.** New behavior gets a test; changed behavior gets its existing test updated, not deleted. `uv run pytest` green.
+- **User-facing instructions.** The `HELP` text in [bot/handlers/start.py](bot/handlers/start.py), button labels, and hint messages. If a user can read it, it's an interface and it can go stale.
+
+Scope still applies (§3): reconcile what the change touched, nothing else. An unrelated docs edit is the same noise as an unrelated code edit.
+
+The test: read the diff, the docs, and the help text together — do they contradict each other anywhere?
+
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.

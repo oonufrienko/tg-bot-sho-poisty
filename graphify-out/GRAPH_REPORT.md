@@ -1,126 +1,164 @@
-# Graph Report - .  (2026-07-14)
+# Graph Report - .  (2026-07-15)
 
 ## Corpus Check
-- 14 files · ~10,134 words
+- 24 files · ~14,197 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 309 nodes · 675 edges · 21 communities (19 shown, 2 thin omitted)
-- Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 29 edges (avg confidence: 0.68)
-- Token cost: 52,378 input · 4,000 output
+- 415 nodes · 914 edges · 37 communities (24 shown, 13 thin omitted)
+- Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 48 edges (avg confidence: 0.67)
+- Token cost: 55,981 input · 0 output
 
 ## Community Hubs (Navigation)
-- LLM Interface & Schemas
-- Architecture Rules & Docs
-- Group Management & User
-- Recipe Ingestion Flow
-- Data Repository (SQL)
-- Config & Middleware
-- DB Models & Migrations
-- Menu Planning Handlers
+- LLM Contract & Schemas
+- Architecture Rules & Guidelines
 - Dish Query Handlers
-- Architecture Test Suite
-- Shopping List & Tests
-- Bot Type Ref
-- Project Package
+- Repository SQL Layer
+- Group Management Handlers
+- ORM Models & Repo Tests
+- Recipe Adding Handlers
+- Config, Session & Migrations
+- LLM Errors & Retry
+- Architecture Test Internals
+- OpenRouter Client
+- Menu Planning Handlers
+- Shopping List Aggregation
+- Deployment & Secrets
+- Recipe Rendering
+- Telegram Input Ingestion
+- Aiogram Bot Symbol
+- Recipe Model Reference
+- LLMClient Reference
+- QueryIntent Reference
+- LLMClient Reference
+- QueryIntent Reference
+- Keyboard Markup Reference
+- DishCB Callback Reference
+- Exception Reference
+- Group Model Reference
+- Project Root Node
+- RecentCB Callback Reference
+- Generic TypeVar
 
 ## God Nodes (most connected - your core abstractions)
-1. `LLMClient` - 19 edges
-2. `User` - 15 edges
-3. `QueryIntent` - 13 edges
-4. `GeminiClient` - 13 edges
-5. `Recipe` - 11 edges
-6. `run_replace_flow()` - 11 edges
-7. `Base` - 10 edges
-8. `show_confirmation()` - 10 edges
-9. `aggregate()` - 10 edges
-10. `get_settings()` - 10 edges
+1. `LLMClient` - 30 edges
+2. `QueryIntent` - 23 edges
+3. `OpenRouterClient` - 18 edges
+4. `LLMError` - 14 edges
+5. `GeminiClient` - 14 edges
+6. `run_with_retries()` - 14 edges
+7. `LLMQuotaError` - 13 edges
+8. `run_find_dish()` - 12 edges
+9. `free_text()` - 12 edges
+10. `RecipeExtraction` - 12 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `BotFather (BOT_TOKEN source)` --semantically_similar_to--> `BotFather`  [INFERRED] [semantically similar]
-  README.md → NEXT_STEPS.md
-- `userinfobot (Telegram id lookup)` --semantically_similar_to--> `userinfobot`  [INFERRED] [semantically similar]
-  README.md → NEXT_STEPS.md
-- `Oracle Free Tier Server (1 GB RAM, swap memo)` --semantically_similar_to--> `Oracle Server (ssh ubuntu@oracle, ~/tg-bot-sho-poisty)`  [INFERRED] [semantically similar]
-  README.md → NEXT_STEPS.md
 - `bot service` --references--> `.env File on Server`  [INFERRED]
   docker-compose.yml → NEXT_STEPS.md
-- `GEMINI_API_KEY` --references--> `Gemini AI`  [INFERRED]
-  NEXT_STEPS.md → README.md
+- `Layer Rules Enforced By Architecture Tests` --conceptually_related_to--> `CodeRabbit Review Configuration`  [INFERRED]
+  CLAUDE.md → .coderabbit.yaml
+- `test_parse_qty_variants()` --calls--> `parse_qty()`  [EXTRACTED]
+  tests/test_shopping_list.py → bot/services/shopping_list.py
+- `test_aggregate_decimal_comma_output()` --calls--> `aggregate()`  [EXTRACTED]
+  tests/test_shopping_list.py → bot/services/shopping_list.py
+- `test_aggregate_keeps_different_units_separate()` --calls--> `aggregate()`  [EXTRACTED]
+  tests/test_shopping_list.py → bot/services/shopping_list.py
 
 ## Import Cycles
 - None detected.
 
 ## Hyperedges (group relationships)
+- **Layer Boundary Rules Enforced Across Config, Docs And Tests** — coderabbit_models_data_only_rule, coderabbit_repo_sole_query_site_rule, coderabbit_thin_handlers_rule, coderabbit_services_tenancy_explicit_rule, claude_layer_rules_enforced_by_tests [INFERRED 0.85]
+- **Group Tenancy Isolation Concerns** — readme_group_shared_recipe_base, report_2026_07_14_09_01_cross_group_serve_history, report_2026_07_14_09_01_fsm_group_binding, report_2026_07_14_09_01_group_scoping_invariant, coderabbit_services_tenancy_explicit_rule [INFERRED 0.85]
+- **Zero-Hallucination Enforcement Mechanisms** — readme_zero_hallucination_principle, coderabbit_llm_escaping_rule, coderabbit_llmclient_interface_rule, readme_shopping_list_scaling_limitation [INFERRED 0.85]
 - **Layered Architecture Rule Set** — architecture_layer_rules, architecture_models_data_only, architecture_repo_single_sql_point, architecture_services_no_telegram, architecture_thin_handlers, architecture_new_feature_new_service [EXTRACTED 1.00]
 - **Server .env Configuration Bundle** — next_steps_env_file, next_steps_bot_token, next_steps_gemini_api_key, next_steps_allowed_user_ids [EXTRACTED 1.00]
-- **Zero Hallucination Pipeline (LLM extracts/selects, DB renders)** — readme_zero_hallucination_principle, readme_gemini_ai, readme_llm_abstraction, readme_sqlite_db [INFERRED 0.85]
 
-## Communities (21 total, 2 thin omitted)
+## Communities (37 total, 13 thin omitted)
 
-### Community 0 - "LLM Interface & Schemas"
+### Community 0 - "LLM Contract & Schemas"
 Cohesion: 0.12
-Nodes (28): ABC, BaseModel, Recipe, ExtractedIngredient, LLMClient, LLMError, MenuPlanResult, MenuSlot (+20 more)
+Nodes (27): ABC, BaseModel, Recipe, ExtractedIngredient, LLMClient, MenuPlanResult, MenuSlot, QueryIntent (+19 more)
 
-### Community 1 - "Architecture Rules & Docs"
-Cohesion: 0.08
-Nodes (35): services/ingestion.py adapter (sanctioned aiogram exception), Layer Rules (handlers → services → repo → models), Rule 1: Models are data-only, Rule 6: New feature = new service, Rule 2: repo.py is the single SQL point, Rule 3: Services know nothing about Telegram, Architecture Test Suite (tests/test_architecture.py), Rule 4: Thin handlers (no SQL, no business rules, no prompts) (+27 more)
+### Community 1 - "Architecture Rules & Guidelines"
+Cohesion: 0.07
+Nodes (41): services/ingestion.py adapter (sanctioned aiogram exception), Layer Rules (handlers → services → repo → models), Rule 1: Models are data-only, Rule 6: New feature = new service, Rule 2: repo.py is the single SQL point, Rule 3: Services know nothing about Telegram, Architecture Test Suite (tests/test_architecture.py), Rule 4: Thin handlers (no SQL, no business rules, no prompts) (+33 more)
 
-### Community 2 - "Group Management & User"
+### Community 2 - "Dish Query Handlers"
+Cohesion: 0.16
+Nodes (36): another_dish(), ask_delete(), ask_hint(), ask_suggestion(), cancel_delete(), choose_dish(), confirm_delete(), free_text() (+28 more)
+
+### Community 3 - "Repository SQL Layer"
 Cohesion: 0.13
-Nodes (32): User, create_group_finish(), create_group_start(), group_menu(), _group_overview(), GroupStates, invite_link(), members_list() (+24 more)
+Nodes (32): add_recipe(), create_group(), delete_recipe(), ensure_user(), find_recipe_by_title(), get_group(), get_recipe(), get_user() (+24 more)
 
-### Community 3 - "Recipe Ingestion Flow"
-Cohesion: 0.13
-Nodes (31): add_hint(), AddStates, amend_apply(), amend_start(), cancel(), handle_media(), AsyncSession, Bot (+23 more)
-
-### Community 4 - "Data Repository (SQL)"
-Cohesion: 0.17
-Nodes (25): add_recipe(), create_group(), ensure_user(), get_group(), get_recipe(), get_user(), group_members(), group_recipes() (+17 more)
-
-### Community 5 - "Config & Middleware"
-Cohesion: 0.13
-Nodes (16): Any, async_sessionmaker, BaseMiddleware, BaseSettings, Bot, get_settings(), Відкритий доступ — лише за явним ALLOWED_USER_IDS=* (dev-режим)., Settings (+8 more)
-
-### Community 6 - "DB Models & Migrations"
+### Community 4 - "Group Management Handlers"
 Cohesion: 0.14
-Nodes (16): Base, Group, GroupMember, RecipeCategory, RecipeMedia, ServeHistory, utcnow(), datetime (+8 more)
+Nodes (31): create_group_finish(), create_group_start(), group_menu(), _group_overview(), GroupStates, invite_link(), members_list(), move_recipes_confirm() (+23 more)
 
-### Community 7 - "Menu Planning Handlers"
-Cohesion: 0.21
-Nodes (20): menu_hint(), _plan_for_active_group(), AsyncSession, CallbackQuery, FSMContext, LLMClient, Message, QueryIntent (+12 more)
+### Community 5 - "ORM Models & Repo Tests"
+Cohesion: 0.11
+Nodes (26): Base, Group, GroupMember, RecipeCategory, RecipeMedia, ServeHistory, User, utcnow() (+18 more)
 
-### Community 8 - "Dish Query Handlers"
-Cohesion: 0.26
-Nodes (19): another_dish(), ask_hint(), choose_dish(), free_text(), _meal_type(), AsyncSession, CallbackQuery, FSMContext (+11 more)
+### Community 6 - "Recipe Adding Handlers"
+Cohesion: 0.15
+Nodes (26): add_hint(), AddStates, amend_apply(), amend_start(), cancel(), handle_media(), AsyncSession, Bot (+18 more)
 
-### Community 9 - "Architecture Test Suite"
+### Community 7 - "Config, Session & Migrations"
+Cohesion: 0.12
+Nodes (15): Any, async_sessionmaker, BaseMiddleware, BaseSettings, get_settings(), Відкритий доступ — лише за явним ALLOWED_USER_IDS=* (dev-режим)., Settings, get_session_factory() (+7 more)
+
+### Community 8 - "LLM Errors & Retry"
+Cohesion: 0.16
+Nodes (22): LLMError, LLMQuotaError, Exception, Перевищено ліміт запитів провайдера (HTTP 429)., Exception, T, Спільні ретраї для LLM-провайдерів з класифікацією за HTTP-статусом., Пауза перед наступною спробою; None = помилка постійна, не ретраїмо. (+14 more)
+
+### Community 9 - "Architecture Test Internals"
 Cohesion: 0.19
 Nodes (18): AsyncFunctionDef, FunctionDef, Module, Path, _imported_modules(), _imported_names_from(), _is_property(), _is_trivial_property() (+10 more)
 
-### Community 10 - "Shopping List & Tests"
+### Community 10 - "OpenRouter Client"
+Cohesion: 0.20
+Nodes (10): _file_part(), OpenRouterClient, T, _text_part(), _client_with_stub(), OpenRouterClient: збірка повідомлення і параметрів без реальних викликів API., StubCompletions, test_extract_recipe_builds_multimodal_message() (+2 more)
+
+### Community 11 - "Menu Planning Handlers"
+Cohesion: 0.35
+Nodes (13): menu_hint(), _plan_for_active_group(), AsyncSession, CallbackQuery, FSMContext, Message, User, run_menu_flow() (+5 more)
+
+### Community 12 - "Shopping List Aggregation"
 Cohesion: 0.25
 Nodes (12): aggregate(), _format_amount(), parse_qty(), Агрегація інгредієнтів у список покупок., «1,5» → 1.5; «1/2» → 0.5; «2-3» → 3 (беремо більше, щоб точно вистачило)., Сумує кількості за (назва, одиниця). Повертає готові рядки списку покупок., test_aggregate_decimal_comma_output(), test_aggregate_keeps_different_units_separate() (+4 more)
 
+### Community 13 - "Deployment & Secrets"
+Cohesion: 0.20
+Nodes (10): bot service, ./data Volume Mount, ALLOWED_USER_IDS (whitelist env var, fail-closed), BOT_TOKEN, BotFather, Deployment Workflow (docker compose, rsync update), .env File on Server, GEMINI_API_KEY (+2 more)
+
+### Community 14 - "Recipe Rendering"
+Cohesion: 0.39
+Nodes (6): _ingredient_line(), Recipe, Формування текстів відповідей. Рецепти рендеряться ДОСЛІВНО з БД., render_extraction_card(), render_menu_day(), render_recipe()
+
+### Community 15 - "Telegram Input Ingestion"
+Cohesion: 0.36
+Nodes (7): collect_input(), _download(), Bot, Message, Перетворення повідомлення Telegram на вхід для екстракції рецепта., Витягує текст і файли з повідомлення (фото/скрін/PDF/текст/форвард)., RecipeInput
+
 ## Knowledge Gaps
-- **6 isolated node(s):** `tg-bot-sho-poisty`, `./data Volume Mount`, `aiogram 3 Long Polling`, `BotFather (BOT_TOKEN source)`, `userinfobot (Telegram id lookup)` (+1 more)
+- **6 isolated node(s):** `./data Volume Mount`, `GEMINI_API_KEY`, `BotFather`, `userinfobot`, `Oracle Server (ssh ubuntu@oracle, ~/tg-bot-sho-poisty)` (+1 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **2 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **13 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `run_migrations()` connect `Config & Middleware` to `Architecture Test Suite`?**
-  _High betweenness centrality (0.097) - this node is a cross-community bridge._
-- **Why does `get_settings()` connect `Config & Middleware` to `DB Models & Migrations`?**
-  _High betweenness centrality (0.042) - this node is a cross-community bridge._
-- **Are the 2 inferred relationships involving `LLMClient` (e.g. with `AddStates` and `GeminiClient`) actually correct?**
-  _`LLMClient` has 2 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 2 inferred relationships involving `User` (e.g. with `AddStates` and `GroupStates`) actually correct?**
-  _`User` has 2 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 6 inferred relationships involving `GeminiClient` (e.g. with `LLMClient` and `LLMError`) actually correct?**
-  _`GeminiClient` has 6 INFERRED edges - model-reasoned connections that need verification._
-- **What connects `tg-bot-sho-poisty`, `./data Volume Mount`, `aiogram 3 Long Polling` to the rest of the system?**
-  _6 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `LLM Interface & Schemas` be split into smaller, more focused modules?**
-  _Cohesion score 0.11522198731501057 - nodes in this community are weakly interconnected._
+- **Why does `LLMClient` connect `LLM Contract & Schemas` to `Dish Query Handlers`, `Recipe Adding Handlers`, `Config, Session & Migrations`, `OpenRouter Client`, `Menu Planning Handlers`?**
+  _High betweenness centrality (0.055) - this node is a cross-community bridge._
+- **Why does `OpenRouterClient` connect `OpenRouter Client` to `LLM Contract & Schemas`, `LLM Errors & Retry`, `Config, Session & Migrations`?**
+  _High betweenness centrality (0.039) - this node is a cross-community bridge._
+- **Why does `LLMError` connect `LLM Errors & Retry` to `LLM Contract & Schemas`, `Dish Query Handlers`, `Recipe Adding Handlers`, `OpenRouter Client`, `Menu Planning Handlers`?**
+  _High betweenness centrality (0.031) - this node is a cross-community bridge._
+- **Are the 3 inferred relationships involving `LLMClient` (e.g. with `AddStates` and `GeminiClient`) actually correct?**
+  _`LLMClient` has 3 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 2 inferred relationships involving `QueryIntent` (e.g. with `GeminiClient` and `OpenRouterClient`) actually correct?**
+  _`QueryIntent` has 2 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 7 inferred relationships involving `OpenRouterClient` (e.g. with `LLMClient` and `LLMError`) actually correct?**
+  _`OpenRouterClient` has 7 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 4 inferred relationships involving `LLMError` (e.g. with `AddStates` and `OpenRouterClient`) actually correct?**
+  _`LLMError` has 4 INFERRED edges - model-reasoned connections that need verification._
