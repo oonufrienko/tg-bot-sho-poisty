@@ -40,6 +40,10 @@ class DishCB(CallbackData, prefix="dish"):
     recipe_id: int = 0
 
 
+class AskCB(CallbackData, prefix="ask"):
+    key: str  # ключ із ASK_SUGGESTIONS
+
+
 class MenuCB(CallbackData, prefix="menu"):
     action: str  # shop | take
 
@@ -128,6 +132,15 @@ def options_keyboard(options: list[tuple[int, str]]) -> InlineKeyboardMarkup:
             text=title[:60], callback_data=DishCB(action="choose", recipe_id=recipe_id)
         )
     builder.adjust(1)
+    return builder.as_markup()
+
+
+def ask_keyboard(options: list[tuple[str, str]]) -> InlineKeyboardMarkup:
+    """Готові підказки під «Що приготувати?»: (key, напис)."""
+    builder = InlineKeyboardBuilder()
+    for key, label in options:
+        builder.button(text=label, callback_data=AskCB(key=key))
+    builder.adjust(2, 2, 1)
     return builder.as_markup()
 
 

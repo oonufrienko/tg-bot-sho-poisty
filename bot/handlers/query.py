@@ -15,8 +15,10 @@ from bot.handlers.start import HELP
 from bot.keyboards.common import (
     BTN_ASK,
     BTN_RECENT,
+    AskCB,
     DishCB,
     RecentCB,
+    ask_keyboard,
     delete_confirm_keyboard,
     dish_keyboard,
     options_keyboard,
@@ -36,15 +38,51 @@ AI_RATE_LIMITED = "Перевищено ліміт запитів AI 🕐 Зач
 FOREIGN_RECIPE = "Ця страва з іншої групи — ви переключились. Спитайте мене заново 🙂"
 
 
+# Готові підказки: key → (напис на кнопці, запит, інтент).
+# Інтент відомий наперед, тому кнопка не витрачає зайвий раунд на route_query.
+ASK_SUGGESTIONS: dict[str, tuple[str, str, dict]] = {
+    "breakfast": ("Сніданок", "сніданок", {"intent": "find_dish", "meal_types": ["breakfast"]}),
+    "dinner": ("Вечеря", "вечеря", {"intent": "find_dish", "meal_types": ["dinner"]}),
+    "dessert": ("Десерт", "десерт", {"intent": "find_dish", "meal_types": ["dessert"]}),
+    "tea": ("До чаю", "щось до чаю", {"intent": "find_dish", "meal_types": ["dessert"]}),
+    "menu2": ("Меню на 2 дні", "меню на 2 дні", {"intent": "plan_menu", "days": 2}),
+}
+
+
 @router.message(F.text == BTN_ASK)
 async def ask_hint(message: Message) -> None:
     await message.answer(
-        "Просто спитайте, наприклад:\n"
-        "• «що сьогодні на вечерю?»\n"
-        "• «що приготувати з курки?»\n"
-        "• «щось до чаю, не солодке»\n"
-        "• «покажи обіди з яловичиною»"
+        "Що шукаємо?\n\nАбо просто напишіть своїми словами — наприклад, «що приготувати з курки?»",
+        reply_markup=ask_keyboard([(key, label) for key, (label, _, _) in ASK_SUGGESTIONS.items()]),
     )
+
+
+@router.callback_query(AskCB.filter())
+async def ask_suggestion(
+    query: CallbackQuery,
+    callback_data: AskCB,
+    state: FSMContext,
+    session: AsyncSession,
+    user: User,
+    llm: LLMClient,
+    bot: Bot,
+) -> None:
+    await query.answer()
+    suggestion = ASK_SUGGESTIONS.get(callback_data.key)
+    if suggestion is None or not isinstance(query.message, Message):
+        return
+    _, text, payload = suggestion
+    intent = QueryIntent.model_validate(payload)
+    try:
+        async with ChatActionSender.typing(bot=bot, chat_id=query.message.chat.id):
+            if intent.intent == "plan_menu":
+                await run_menu_flow(query.message, state, session, user, llm, text, intent)
+            else:
+                await run_find_dish(query.message, state, session, user, llm, text, intent)
+    except LLMQuotaError:
+        await query.message.answer(AI_RATE_LIMITED)
+    except LLMError:
+        await query.message.answer(AI_UNAVAILABLE)
 
 
 @router.message(F.text == BTN_RECENT)
