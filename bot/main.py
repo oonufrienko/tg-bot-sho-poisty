@@ -25,6 +25,9 @@ logging.basicConfig(
 def run_migrations() -> None:
     Path(get_settings().database_path).parent.mkdir(parents=True, exist_ok=True)
     config = AlembicConfig(str(Path(__file__).resolve().parent.parent / "alembic.ini"))
+    # Без цього env.py викликав би fileConfig і збив root-логер на WARN,
+    # проковтнувши всі INFO-логи бота після старту.
+    config.attributes["configure_logger"] = False
     alembic_command.upgrade(config, "head")
 
 
