@@ -81,7 +81,7 @@ The test: read the diff, the docs, and the help text together — do they contra
 
 # tg-bot-sho-poisty
 
-A family-friendly Telegram bot with a recipe database (Python 3.12, aiogram 3, SQLite). LLM via OpenRouter (`OPENROUTER_API_KEY`, model `google/gemini-3.5-flash`), falling back to the Gemini API (`GEMINI_API_KEY`) when OpenRouter is unset.
+A family-friendly Telegram bot with a recipe database (Python 3.12, aiogram 3, SQLite). LLM via OpenRouter (`OPENROUTER_API_KEY`), falling back to the Gemini API (`GEMINI_API_KEY`) when OpenRouter is unset. The model is set by `OPENROUTER_MODEL` in `.env` — currently `google/gemini-3.1-flash-lite-preview`. Change it there, never in code.
 
 - **You must follow the layer rules from [ARCHITECTURE.md](ARCHITECTURE.md).**
   These are verified by the tests in `tests/test_architecture.py` — the tests must

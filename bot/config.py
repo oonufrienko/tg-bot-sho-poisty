@@ -9,7 +9,8 @@ class Settings(BaseSettings):
     gemini_model: str = "gemini-2.5-flash"
     # За наявності OPENROUTER_API_KEY бот працює через OpenRouter (пріоритет)
     openrouter_api_key: str = ""
-    openrouter_model: str = "google/gemini-3.5-flash"
+    # Модель задається в .env; дефолт дублює прод, щоб вони не розходились
+    openrouter_model: str = "google/gemini-3.1-flash-lite-preview"
     allowed_user_ids: str = ""
     database_path: str = "data/bot.db"
 
