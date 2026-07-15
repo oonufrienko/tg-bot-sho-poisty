@@ -47,7 +47,7 @@ def _file_part(data: bytes, mime_type: str) -> dict:
 
 
 class OpenRouterClient(LLMClient):
-    def __init__(self, api_key: str, model: str = "google/gemini-3.5-flash"):
+    def __init__(self, api_key: str, model: str = "google/gemini-3.1-flash-lite-preview"):
         self._client = AsyncOpenAI(api_key=api_key, base_url=OPENROUTER_BASE_URL)
         self._model = model
 

@@ -27,7 +27,8 @@
 1. Створіть бота у [@BotFather](https://t.me/BotFather) → отримайте `BOT_TOKEN`.
 2. Отримайте ключ AI (одне з двох):
    - **Рекомендовано:** OpenRouter (платний, стабільний) — https://openrouter.ai/keys
-     → `OPENROUTER_API_KEY`. Модель за замовчуванням `google/gemini-3.5-flash`.
+     → `OPENROUTER_API_KEY`. Модель — `OPENROUTER_MODEL` у `.env`
+     (зараз `google/gemini-3.1-flash-lite-preview`); міняється без правок коду.
    - Запасний варіант: безкоштовний ключ Gemini API — https://aistudio.google.com/apikey
      → `GEMINI_API_KEY` (безкоштовний tier має ~10 запитів/хв).
    За наявності обох пріоритет має OpenRouter.

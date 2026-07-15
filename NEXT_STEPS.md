@@ -1,71 +1,77 @@
-# Що залишилось зробити (≈10 хвилин)
+# Експлуатація бота
 
-## Вже зроблено ✅
+Бот працює. Це шпаргалка на щодня, а не інструкція з першого запуску.
 
-- Проєкт скопійовано на сервер: `ssh ubuntu@oracle`, каталог `~/tg-bot-sho-poisty`
-- Docker-образ зібрано, міграції БД перевірено — все працює
-- Swap 2 ГБ і Docker на сервері вже були налаштовані
-- На сервері створено `.env` із заготовкою — **треба вписати справжні значення**
+**Де він живе:** `ssh ubuntu@oracle`, каталог `~/tg-bot-sho-poisty` — це git-клон
+`origin`, тому оновлення робиться через `git pull`, а не копіюванням з Mac.
 
-## Ваші кроки
-
-### 1. Отримайте три значення
-
-| Що | Де взяти |
-|---|---|
-| `BOT_TOKEN` | Telegram → [@BotFather](https://t.me/BotFather) → `/newbot` → скопіювати токен |
-| `GEMINI_API_KEY` | https://aistudio.google.com/apikey → «Create API key» (безкоштовно) |
-| `ALLOWED_USER_IDS` | Ваш id: напишіть боту [@userinfobot](https://t.me/userinfobot) |
-
-### 2. Впишіть їх у .env на сервері
+## Оновити код
 
 ```bash
 ssh ubuntu@oracle
 cd ~/tg-bot-sho-poisty
-nano .env          # вписати три значення, зберегти: Ctrl+O, Enter, Ctrl+X
+git pull
+docker compose up -d --build
+docker compose logs -f bot        # має бути «Бот запущено (long polling)»; вихід — Ctrl+C
 ```
 
-`ALLOWED_USER_IDS` — поки що лише ваш id; id дружини/мами додасте потім через кому
-(наприклад `123456,789012`) і перезапустите бота (команда нижче).
-Порожнє значення нікого не пускає (безпечно за замовчуванням); `*` відкриє бота всім.
+**`--build` обов'язковий.** Без нього `up -d` бере вже зібраний образ, і бот
+мовчки працюватиме на старому коді — саме так виникає крешлуп після `git pull`.
 
-### 3. Запустіть бота
+## Змінити .env (ключі, список доступу)
 
 ```bash
-docker compose up -d
-docker compose logs -f bot    # має з'явитись «Бот запущено (long polling)»; вихід — Ctrl+C
+nano .env                 # зберегти: Ctrl+O, Enter, Ctrl+X
+docker compose up -d      # саме up -d, НЕ restart
 ```
 
-### 4. Перевірте в Telegram
+**`docker compose restart` не перечитує `.env`.** Змінні з `env_file` вшиваються
+в контейнер при його створенні, а `restart` піднімає той самий контейнер зі
+старими значеннями. `up -d` помічає зміну і перестворює його.
 
-1. Відкрийте свого бота → `/start`
-2. Надішліть будь-який рецепт текстом або фото → підтвердіть збереження
-3. Спитайте «що приготувати?»
-4. Кнопка «👨‍👩‍👧 Група» → «➕ Створити групу» → «Сім'я» → перешліть
-   invite-посилання рідним (їхні id теж мають бути в `ALLOWED_USER_IDS`!)
+## Ключі в .env
 
-## Корисні команди (на сервері, з ~/tg-bot-sho-poisty)
+| Змінна | Навіщо |
+|---|---|
+| `BOT_TOKEN` | Токен від [@BotFather](https://t.me/BotFather) |
+| `OPENROUTER_API_KEY` | **Основний** провайдер LLM |
+| `GEMINI_API_KEY` | Запасний — вмикається, лише якщо OpenRouter не заданий |
+| `OPENROUTER_MODEL` | Модель — зараз `google/gemini-3.1-flash-lite-preview` |
+| `ALLOWED_USER_IDS` | Хто має доступ (див. нижче) |
+
+Потрібен хоча б один із двох ключів LLM, інакше бот не стартує.
+
+## Доступ
+
+`ALLOWED_USER_IDS` — id через кому: `123456,789012`. Свій id дізнатись у
+[@userinfobot](https://t.me/userinfobot).
+
+- порожнє — не пускає нікого (безпечно за замовчуванням);
+- `*` — **відкриває бота всім у Telegram**, хто знайде його за іменем.
+
+Після зміни — `docker compose up -d` (не `restart`, див. вище).
+
+## Щоденні команди
 
 ```bash
-docker compose logs -f bot        # логи
-docker compose restart            # перезапуск (після зміни .env)
-docker compose down               # зупинити
-cp data/bot.db ~/backup-recipes-$(date +%F).db   # бекап бази рецептів
-```
-
-## Оновлення коду (з Mac, після змін у проєкті)
-
-```bash
-rsync -az --exclude '.venv' --exclude 'data' --exclude '.env' \
-  --exclude '__pycache__' --exclude '.pytest_cache' --exclude '*.egg-info' \
-  ./ ubuntu@oracle:~/tg-bot-sho-poisty/
-ssh ubuntu@oracle "cd ~/tg-bot-sho-poisty && docker compose up -d --build"
+docker compose logs -f bot                        # логи
+docker compose logs bot | tail -30                # останнє, без стеження
+docker compose down                               # зупинити
+cp data/bot.db ~/backup-recipes-$(date +%F).db    # бекап бази рецептів
 ```
 
 ## Якщо щось не так
 
-- **Бот не відповідає** → `docker compose logs bot | tail -30`: якщо там
-  «Unauthorized» — невірний BOT_TOKEN; якщо помилки Gemini — перевірте ключ.
-- **«Це приватний сімейний бот»** → вашого id немає в `ALLOWED_USER_IDS`
-  (або забули перезапустити після зміни .env).
-- На сервері також працюють `tg-news-filter` і `my-tg-bot` — я їх не чіпав.
+- **Бот не відповідає** → `docker compose logs bot | tail -30`.
+  «Unauthorized» — невірний `BOT_TOKEN`; помилки 401/429 — ключ LLM.
+- **«Це приватний сімейний бот»** → вашого id немає в `ALLOWED_USER_IDS`,
+  або після зміни зробили `restart` замість `up -d`.
+- **Бот на старому коді після `git pull`** → забули `--build`.
+- **Кода немає в логах взагалі** → лог обривається одразу після міграцій?
+  Такого більше не має бути, але саме так виглядав баг, коли alembic збивав
+  root-логер на WARN.
+
+## Про сервер
+
+На цій же машині крутяться чужі контейнери — `tg-news-filter` і `my-tg-bot`.
+Не чіпати: `docker system prune -a` та подібне знесе і їх.
