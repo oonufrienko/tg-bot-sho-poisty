@@ -4,6 +4,7 @@ from html import escape
 from aiogram import Bot, F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
+from aiogram.utils.chat_action import ChatActionSender
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.db import repo
@@ -16,8 +17,10 @@ from bot.keyboards.common import (
     BTN_RECENT,
     DishCB,
     RecentCB,
+    delete_confirm_keyboard,
     dish_keyboard,
     options_keyboard,
+    recent_added_keyboard,
     recent_keyboard,
 )
 from bot.rendering import render_recipe
@@ -56,6 +59,7 @@ async def recent_list(
     await query.answer()
     if user.active_group_id is None or not isinstance(query.message, Message):
         return
+    markup = None
     if callback_data.kind == "added":
         recipes = await repo.recent_recipes(session, user.active_group_id, limit=10)
         if not recipes:
@@ -63,6 +67,8 @@ async def recent_list(
             return
         lines = ["🕐 <b>Останні додані страви:</b>\n"]
         lines += [f"{i}. {escape(r.title)}" for i, r in enumerate(recipes, 1)]
+        lines.append("\nЩоб прибрати страву з бази — натисніть 🗑 нижче.")
+        markup = recent_added_keyboard([(r.id, r.title) for r in recipes])
     else:
         served = await repo.recent_served(session, user.active_group_id, limit=10)
         if not served:
@@ -75,7 +81,7 @@ async def recent_list(
                if sh.meal_type in MEAL_LABELS else f" ({sh.served_on:%d.%m})")
             for i, (sh, r) in enumerate(served, 1)
         ]
-    await send_long(query.message, "\n".join(lines))
+    await send_long(query.message, "\n".join(lines), reply_markup=markup)
 
 
 def _meal_type(intent: QueryIntent) -> str | None:
@@ -175,6 +181,7 @@ async def another_dish(
     session: AsyncSession,
     user: User,
     llm: LLMClient,
+    bot: Bot,
 ) -> None:
     await query.answer()
     if not isinstance(query.message, Message):
@@ -185,16 +192,17 @@ async def another_dish(
         return
     intent = QueryIntent.model_validate(data["q_intent"])
     try:
-        await run_find_dish(
-            query.message,
-            state,
-            session,
-            user,
-            llm,
-            data["q_text"],
-            intent,
-            exclude_ids=set(data.get("q_shown", [])),
-        )
+        async with ChatActionSender.typing(bot=bot, chat_id=query.message.chat.id):
+            await run_find_dish(
+                query.message,
+                state,
+                session,
+                user,
+                llm,
+                data["q_text"],
+                intent,
+                exclude_ids=set(data.get("q_shown", [])),
+            )
     except LLMQuotaError:
         await query.message.answer(AI_RATE_LIMITED)
     except LLMError:
@@ -222,6 +230,55 @@ async def choose_dish(
     await show_dish(query.message, state, recipe, shown)
 
 
+@router.callback_query(DishCB.filter(F.action == "del"))
+async def ask_delete(
+    query: CallbackQuery,
+    callback_data: DishCB,
+    session: AsyncSession,
+    user: User,
+) -> None:
+    if not isinstance(query.message, Message) or user.active_group_id is None:
+        await query.answer()
+        return
+    recipe = await repo.get_recipe(session, callback_data.recipe_id, user.active_group_id)
+    if recipe is None:
+        await query.answer(FOREIGN_RECIPE, show_alert=True)
+        return
+    await query.answer()
+    await query.message.answer(
+        f"Видалити «{escape(recipe.title)}» з бази?\nДію не можна скасувати.",
+        reply_markup=delete_confirm_keyboard(recipe.id),
+    )
+
+
+@router.callback_query(DishCB.filter(F.action == "del_ok"))
+async def confirm_delete(
+    query: CallbackQuery,
+    callback_data: DishCB,
+    session: AsyncSession,
+    user: User,
+) -> None:
+    if user.active_group_id is None:
+        await query.answer()
+        return
+    title = await repo.delete_recipe(
+        session, callback_data.recipe_id, user.active_group_id
+    )
+    if title is None:
+        await query.answer(FOREIGN_RECIPE, show_alert=True)
+        return
+    await query.answer("Видалено")
+    if isinstance(query.message, Message):
+        await query.message.edit_text(f"🗑 Видалено «{escape(title)}»")
+
+
+@router.callback_query(DishCB.filter(F.action == "del_no"))
+async def cancel_delete(query: CallbackQuery) -> None:
+    await query.answer()
+    if isinstance(query.message, Message):
+        await query.message.edit_text("Добре, залишаю 👌")
+
+
 @router.message(F.text, ~F.text.startswith("/"))
 async def free_text(
     message: Message,
@@ -233,33 +290,34 @@ async def free_text(
 ) -> None:
     text = message.text or ""
     try:
-        intent = await llm.route_query(text)
+        async with ChatActionSender.typing(bot=bot, chat_id=message.chat.id):
+            intent = await llm.route_query(text)
 
-        match intent.intent:
-            case "add_recipe":
-                recipe_input = await collect_input(message, bot)
-                await start_recipe_flow(message, state, llm, recipe_input)
-            case "find_dish":
-                await run_find_dish(message, state, session, user, llm, text, intent)
-            case "another_suggestion":
-                data = await state.get_data()
-                if data.get("q_text") and data.get("q_group_id") == user.active_group_id:
-                    previous = QueryIntent.model_validate(data["q_intent"])
-                    await run_find_dish(
-                        message, state, session, user, llm,
-                        data["q_text"], previous,
-                        exclude_ids=set(data.get("q_shown", [])),
-                    )
-                else:
+            match intent.intent:
+                case "add_recipe":
+                    recipe_input = await collect_input(message, bot)
+                    await start_recipe_flow(message, state, llm, recipe_input)
+                case "find_dish":
                     await run_find_dish(message, state, session, user, llm, text, intent)
-            case "plan_menu":
-                await run_menu_flow(message, state, session, user, llm, text, intent)
-            case "replace_slot":
-                await run_replace_flow(message, state, session, user, llm, text, intent)
-            case "recent_dishes":
-                await message.answer("Які страви показати?", reply_markup=recent_keyboard())
-            case _:
-                await message.answer(HELP)
+                case "another_suggestion":
+                    data = await state.get_data()
+                    if data.get("q_text") and data.get("q_group_id") == user.active_group_id:
+                        previous = QueryIntent.model_validate(data["q_intent"])
+                        await run_find_dish(
+                            message, state, session, user, llm,
+                            data["q_text"], previous,
+                            exclude_ids=set(data.get("q_shown", [])),
+                        )
+                    else:
+                        await run_find_dish(message, state, session, user, llm, text, intent)
+                case "plan_menu":
+                    await run_menu_flow(message, state, session, user, llm, text, intent)
+                case "replace_slot":
+                    await run_replace_flow(message, state, session, user, llm, text, intent)
+                case "recent_dishes":
+                    await message.answer("Які страви показати?", reply_markup=recent_keyboard())
+                case _:
+                    await message.answer(HELP)
     except LLMQuotaError:
         await message.answer(AI_RATE_LIMITED)
     except LLMError:
