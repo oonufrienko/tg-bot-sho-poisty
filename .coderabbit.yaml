@@ -1,0 +1,61 @@
+language: en-US
+early_access: false
+
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+  auto_review:
+    enabled: true
+    base_branches:
+      - main
+  path_filters:
+    - "!uv.lock"
+    - "!alembic/versions/**"
+    - "!graphify-out/**"
+  path_instructions:
+    - path: "bot/db/models.py"
+      instructions: |
+        This file must contain only data: SQLAlchemy Mapped columns and simple
+        read-only @property helpers (like Recipe.category_keys). Flag any method
+        with business logic, and any import from bot/services, bot/handlers, or
+        aiogram — models must never depend on upper layers.
+    - path: "bot/db/repo.py"
+      instructions: |
+        This is the single allowed place for SQLAlchemy select/insert/update/delete
+        statements. If a diff introduces query construction anywhere else in the
+        codebase, flag it as an architecture violation.
+    - path: "bot/handlers/**/*.py"
+      instructions: |
+        Handlers must stay thin: parse the update, call repo/services, render the
+        reply via bot/rendering.py. Flag direct SQLAlchemy usage beyond typing an
+        AsyncSession parameter, business rules or LLM prompt text living here, and
+        any recipe_id taken from a callback that isn't verified against the active
+        group via repo.get_recipe. FSM state (menu plan, last query) must be scoped
+        by group_id, not just user_id.
+    - path: "bot/services/**/*.py"
+      instructions: |
+        Services must not import aiogram or accept Message/User objects — they take
+        plain types (group_id: int, query text, intent) so tenancy is explicit.
+        Exception: bot/services/ingestion.py is a deliberate Telegram-message-to-
+        extraction-input adapter and is allowed to import aiogram. Any new LLM call
+        must go through the LLMClient interface in bot/services/llm/base.py, never
+        directly against a provider SDK.
+    - path: "bot/services/llm/**/*.py"
+      instructions: |
+        The LLM may only (a) extract structure from input, or (b) pick recipe IDs
+        from a candidate list supplied by code. It must never originate the recipe
+        text shown to users — that is always a verbatim render from the DB. Any
+        LLM-authored user-facing text (a clarifying question, a menu comment) must
+        be passed through html.escape before being sent.
+  tools:
+    ruff:
+      enabled: true
+    github-checks:
+      enabled: true
+
+chat:
+  auto_reply: true
