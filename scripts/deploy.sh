@@ -3,6 +3,11 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+if [ "$(git branch --show-current)" != "main" ]; then
+    echo "ПОМИЛКА: на сервері активна не main, а «$(git branch --show-current)» — деплой зупинено." >&2
+    exit 1
+fi
+
 if ! git diff --quiet HEAD; then
     echo "ПОМИЛКА: на сервері є незакомічені зміни — деплой зупинено." >&2
     git status --short >&2
