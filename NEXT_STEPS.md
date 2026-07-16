@@ -80,6 +80,24 @@ cp data/bot.db ~/backup-recipes-$(date +%F).db    # бекап бази реце
   Такого більше не має бути, але саме так виглядав баг, коли alembic збивав
   root-логер на WARN.
 
+## Моніторинг (ntfy)
+
+Сповіщення про падіння/зупинку/підняття контейнера приходять у додаток ntfy
+(топік — в `/etc/ntfy-bot-watch.env` на сервері, в git його немає).
+Працює це так: systemd-сервіс `ntfy-bot-watch` на хості слухає `docker events`
+через [scripts/ntfy-docker-watch.sh](scripts/ntfy-docker-watch.sh) і шле POST
+на ntfy.sh. Сервіс живе поза Docker, тому переживає і ребут, і `compose down`.
+
+```bash
+systemctl status ntfy-bot-watch            # чи живий вотчер
+journalctl -u ntfy-bot-watch -n 20         # його логи
+sudo systemctl restart ntfy-bot-watch      # перезапуск (напр., після зміни топіка)
+```
+
+Що надсилається: 🔴 «БОТ ВПАВ» (ненульовий exit code, пріоритет urgent),
+🟡 «Бот зупинено» (штатна зупинка/редеплой), 🟢 «Бот піднявся», 🔴 OOM.
+Під час редеплою пара «зупинено → піднявся» — це нормально.
+
 ## Про сервер
 
 На цій же машині крутяться чужі контейнери — `tg-news-filter` і `my-tg-bot`.
