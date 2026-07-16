@@ -1,33 +1,38 @@
 from datetime import date
 from html import escape
 
+import json
+
 from aiogram import Bot, F, Router
 from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
 from aiogram.utils.chat_action import ChatActionSender
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.db import repo
 from bot.db.models import MEAL_LABELS, User
-from bot.handlers.add_recipe import start_recipe_flow
+from bot.handlers.add_recipe import show_confirmation, start_recipe_flow
 from bot.handlers.menu import run_menu_flow, run_replace_flow
 from bot.handlers.start import HELP
 from bot.keyboards.common import (
     BTN_ASK,
-    BTN_RECENT,
+    BTN_MY_RECIPES,
     AskCB,
     DishCB,
+    ListActionCB,
     RecentCB,
     ask_keyboard,
+    cancel_number_keyboard,
     delete_confirm_keyboard,
     dish_keyboard,
+    list_actions_keyboard,
     options_keyboard,
-    recent_added_keyboard,
     recent_keyboard,
 )
 from bot.rendering import render_recipe
 from bot.services import retrieval
-from bot.services.ingestion import collect_input
+from bot.services.ingestion import RecipeInput, collect_input
 from bot.services.llm.base import LLMClient, LLMError, LLMQuotaError, QueryIntent
 from bot.utils import send_long
 
@@ -36,6 +41,24 @@ router = Router(name="query")
 AI_UNAVAILABLE = "Сервіс AI зараз недоступний, спробуйте за хвилину 🙏"
 AI_RATE_LIMITED = "Перевищено ліміт запитів AI 🕐 Зачекайте хвилину і спробуйте ще раз."
 FOREIGN_RECIPE = "Ця страва з іншої групи — ви переключились. Спитайте мене заново 🙂"
+LIST_GONE = "Спочатку відкрийте «📖 Мої рецепти» → «Весь список» 🙂"
+
+
+class ListStates(StatesGroup):
+    deleting = State()  # чекаємо номер для видалення
+    choosing_edit = State()  # чекаємо номер для редагування
+    editing = State()  # чекаємо текст правки
+
+
+def _pick_by_number(text: str, ids: list[int]) -> int | None:
+    """Номер зі списку → recipe_id. None, якщо це не номер або він поза списком."""
+    raw = (text or "").strip().rstrip(".")
+    if not raw.isdigit():
+        return None
+    number = int(raw)
+    if not 1 <= number <= len(ids):
+        return None
+    return ids[number - 1]
 
 
 # Готові підказки: key → (напис на кнопці, запит, інтент).
@@ -85,28 +108,34 @@ async def ask_suggestion(
         await query.message.answer(AI_UNAVAILABLE)
 
 
-@router.message(F.text == BTN_RECENT)
+@router.message(F.text == BTN_MY_RECIPES)
 async def recent_hint(message: Message) -> None:
-    await message.answer("Які страви показати?", reply_markup=recent_keyboard())
+    await message.answer("Що показати?", reply_markup=recent_keyboard())
 
 
 @router.callback_query(RecentCB.filter())
 async def recent_list(
-    query: CallbackQuery, callback_data: RecentCB, session: AsyncSession, user: User
+    query: CallbackQuery,
+    callback_data: RecentCB,
+    state: FSMContext,
+    session: AsyncSession,
+    user: User,
 ) -> None:
     await query.answer()
     if user.active_group_id is None or not isinstance(query.message, Message):
         return
     markup = None
-    if callback_data.kind == "added":
-        recipes = await repo.recent_recipes(session, user.active_group_id, limit=10)
+    if callback_data.kind == "all":
+        recipes = await repo.group_recipes(session, user.active_group_id)
         if not recipes:
             await query.message.answer("У базі поки немає рецептів.")
             return
-        lines = ["🕐 <b>Останні додані страви:</b>\n"]
+        lines = ["📖 <b>Усі рецепти:</b>\n"]
         lines += [f"{i}. {escape(r.title)}" for i, r in enumerate(recipes, 1)]
-        lines.append("\nЩоб прибрати страву з бази — натисніть 🗑 нижче.")
-        markup = recent_added_keyboard([(r.id, r.title) for r in recipes])
+        # Номери живуть у стані: користувач вводить їх, а не recipe_id.
+        await state.set_state(None)
+        await state.update_data(list_ids=[r.id for r in recipes])
+        markup = list_actions_keyboard()
     else:
         served = await repo.recent_served(session, user.active_group_id, limit=10)
         if not served:
@@ -268,25 +297,161 @@ async def choose_dish(
     await show_dish(query.message, state, recipe, shown)
 
 
-@router.callback_query(DishCB.filter(F.action == "del"))
-async def ask_delete(
-    query: CallbackQuery,
-    callback_data: DishCB,
-    session: AsyncSession,
-    user: User,
+async def _ask_number(
+    query: CallbackQuery, state: FSMContext, target: State, prompt: str
 ) -> None:
-    if not isinstance(query.message, Message) or user.active_group_id is None:
-        await query.answer()
-        return
-    recipe = await repo.get_recipe(session, callback_data.recipe_id, user.active_group_id)
-    if recipe is None:
-        await query.answer(FOREIGN_RECIPE, show_alert=True)
-        return
     await query.answer()
-    await query.message.answer(
+    if not isinstance(query.message, Message):
+        return
+    data = await state.get_data()
+    if not data.get("list_ids"):
+        await query.message.answer(LIST_GONE)
+        return
+    await state.set_state(target)
+    await query.message.answer(prompt, reply_markup=cancel_number_keyboard())
+
+
+@router.callback_query(ListActionCB.filter(F.action == "del"))
+async def ask_delete_number(query: CallbackQuery, state: FSMContext) -> None:
+    await _ask_number(
+        query,
+        state,
+        ListStates.deleting,
+        "Введіть номер страви зі списку, яку треба видалити:",
+    )
+
+
+@router.callback_query(ListActionCB.filter(F.action == "edit"))
+async def ask_edit_number(query: CallbackQuery, state: FSMContext) -> None:
+    await _ask_number(
+        query,
+        state,
+        ListStates.choosing_edit,
+        "Введіть номер страви зі списку, яку треба відредагувати:",
+    )
+
+
+@router.callback_query(ListActionCB.filter(F.action == "cancel"))
+async def cancel_number(query: CallbackQuery, state: FSMContext) -> None:
+    await state.set_state(None)
+    await query.answer("Скасовано")
+    if isinstance(query.message, Message):
+        await query.message.edit_reply_markup(reply_markup=None)
+
+
+async def _resolve_number(
+    message: Message, state: FSMContext, session: AsyncSession, user: User
+):
+    """Спільне для видалення й редагування: номер → рецепт, або None + підказка."""
+    data = await state.get_data()
+    ids: list[int] = data.get("list_ids") or []
+    if not ids or user.active_group_id is None:
+        await state.set_state(None)
+        await message.answer(LIST_GONE)
+        return None
+    recipe_id = _pick_by_number(message.text or "", ids)
+    if recipe_id is None:
+        await message.answer(
+            f"Потрібен номер від 1 до {len(ids)}. Спробуйте ще раз:",
+            reply_markup=cancel_number_keyboard(),
+        )
+        return None
+    recipe = await repo.get_recipe(session, recipe_id, user.active_group_id)
+    if recipe is None:
+        await state.set_state(None)
+        await message.answer(LIST_GONE)
+        return None
+    return recipe
+
+
+@router.message(ListStates.deleting, F.text)
+async def delete_by_number(
+    message: Message, state: FSMContext, session: AsyncSession, user: User
+) -> None:
+    recipe = await _resolve_number(message, state, session, user)
+    if recipe is None:
+        return
+    await state.set_state(None)
+    await message.answer(
         f"Видалити «{escape(recipe.title)}» з бази?\nДію не можна скасувати.",
         reply_markup=delete_confirm_keyboard(recipe.id),
     )
+
+
+@router.message(ListStates.choosing_edit, F.text)
+async def show_for_edit(
+    message: Message, state: FSMContext, session: AsyncSession, user: User
+) -> None:
+    recipe = await _resolve_number(message, state, session, user)
+    if recipe is None:
+        return
+    await state.set_state(ListStates.editing)
+    await state.update_data(edit_id=recipe.id)
+    await send_long(
+        message,
+        render_recipe(recipe)
+        + "\n\n✏️ Надішліть текстом, що змінити або додати — наприклад "
+        "«додай 200г сиру» чи «заміни крок 3 на: випікати 40хв».",
+        reply_markup=cancel_number_keyboard(),
+    )
+
+
+@router.message(ListStates.editing, F.text)
+async def apply_edit(
+    message: Message,
+    state: FSMContext,
+    session: AsyncSession,
+    user: User,
+    llm: LLMClient,
+    bot: Bot,
+) -> None:
+    data = await state.get_data()
+    if user.active_group_id is None:
+        return
+    recipe = await repo.get_recipe(session, data.get("edit_id", 0), user.active_group_id)
+    if recipe is None:
+        await state.set_state(None)
+        await message.answer(LIST_GONE)
+        return
+
+    current = json.dumps(
+        {
+            "title": recipe.title,
+            "ingredients": recipe.ingredients,
+            "steps": recipe.steps,
+            "calories": recipe.calories,
+        },
+        ensure_ascii=False,
+    )
+    merged_text = (
+        f"Поточний рецепт (JSON): {current}\n"
+        f"КОРИСТУВАЧ ЗМІНЮЄ/ДОПОВНЮЄ: {message.text}\n"
+        "Онови структуру рецепта з урахуванням правки. Правка користувача має "
+        "пріоритет; решту полів залиш як є."
+    )
+    try:
+        async with ChatActionSender.typing(bot=bot, chat_id=message.chat.id):
+            extraction = await llm.extract_recipe(merged_text, [])
+    except LLMQuotaError:
+        await message.answer(AI_RATE_LIMITED)
+        return
+    except LLMError:
+        await message.answer(AI_UNAVAILABLE)
+        return
+
+    # Той самий прийом, що і в amend_apply: правимо екстракцію перед карткою.
+    extraction.is_recipe = True
+    extraction.suggested_categories = recipe.category_keys or extraction.suggested_categories
+    if extraction.difficulty is None:
+        extraction.difficulty = recipe.difficulty
+    recipe_input = RecipeInput(
+        text=recipe.original_text,
+        files=[],
+        media=[],
+        source_type=recipe.source_type,
+    )
+    # edit_id передаємо явно: save_recipe за ним піде в update, а не в add.
+    await show_confirmation(message, state, extraction, recipe_input, edit_id=recipe.id)
 
 
 @router.callback_query(DishCB.filter(F.action == "del_ok"))

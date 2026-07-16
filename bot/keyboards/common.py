@@ -12,17 +12,17 @@ from bot.db.models import CATEGORIES
 BTN_ADD = "➕ Додати рецепт"
 BTN_ASK = "🍽 Що приготувати?"
 BTN_MENU = "📅 Меню"
-BTN_RECENT = "🕐 Останні страви"
+BTN_MY_RECIPES = "📖 Мої рецепти"
 BTN_GROUP = "👨‍👩‍👧 Група"
 
-MENU_BUTTONS = {BTN_ADD, BTN_ASK, BTN_MENU, BTN_RECENT, BTN_GROUP}
+MENU_BUTTONS = {BTN_ADD, BTN_ASK, BTN_MENU, BTN_MY_RECIPES, BTN_GROUP}
 
 
 def main_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text=BTN_ADD), KeyboardButton(text=BTN_ASK)],
-            [KeyboardButton(text=BTN_MENU), KeyboardButton(text=BTN_RECENT)],
+            [KeyboardButton(text=BTN_MENU), KeyboardButton(text=BTN_MY_RECIPES)],
             [KeyboardButton(text=BTN_GROUP)],
         ],
         resize_keyboard=True,
@@ -36,7 +36,7 @@ class ConfirmCB(CallbackData, prefix="rc"):
 
 
 class DishCB(CallbackData, prefix="dish"):
-    action: str  # take | another | choose | del | del_ok | del_no
+    action: str  # take | another | choose | del_ok | del_no
     recipe_id: int = 0
 
 
@@ -54,7 +54,11 @@ class GroupCB(CallbackData, prefix="grp"):
 
 
 class RecentCB(CallbackData, prefix="recent"):
-    kind: str  # added | served
+    kind: str  # all | served
+
+
+class ListActionCB(CallbackData, prefix="lst"):
+    action: str  # del | edit | cancel
 
 
 class MoveRecipesCB(CallbackData, prefix="mv"):
@@ -159,16 +163,35 @@ def menu_keyboard() -> InlineKeyboardMarkup:
     )
 
 
-def recent_added_keyboard(options: list[tuple[int, str]]) -> InlineKeyboardMarkup:
-    """Список доданих страв із кнопкою видалення на кожній."""
-    builder = InlineKeyboardBuilder()
-    for recipe_id, title in options:
-        builder.button(
-            text=f"🗑 {title}"[:60],
-            callback_data=DishCB(action="del", recipe_id=recipe_id),
-        )
-    builder.adjust(1)
-    return builder.as_markup()
+def list_actions_keyboard() -> InlineKeyboardMarkup:
+    """Дії під повним списком рецептів — далі бот питає номер."""
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="🗑 Видалити", callback_data=ListActionCB(action="del").pack()
+                ),
+                InlineKeyboardButton(
+                    text="✏️ Редагувати",
+                    callback_data=ListActionCB(action="edit").pack(),
+                ),
+            ]
+        ]
+    )
+
+
+def cancel_number_keyboard() -> InlineKeyboardMarkup:
+    """Вихід із очікування номера — інакше стан висить до наступного тексту."""
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="↩️ Скасувати",
+                    callback_data=ListActionCB(action="cancel").pack(),
+                )
+            ]
+        ]
+    )
 
 
 def delete_confirm_keyboard(recipe_id: int) -> InlineKeyboardMarkup:
@@ -192,7 +215,7 @@ def recent_keyboard() -> InlineKeyboardMarkup:
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="Додані", callback_data=RecentCB(kind="added").pack()
+                    text="Весь список", callback_data=RecentCB(kind="all").pack()
                 ),
                 InlineKeyboardButton(
                     text="Рекомендовані", callback_data=RecentCB(kind="served").pack()
