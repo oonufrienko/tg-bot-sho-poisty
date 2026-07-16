@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import time
 from pathlib import Path
 
 from aiogram import Bot, Dispatcher
@@ -20,6 +21,16 @@ from bot.services.llm.openrouter import OpenRouterClient
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s"
 )
+
+
+async def heartbeat_loop(path: Path, interval: float = 60.0) -> None:
+    """Пише unix-час у файл; якщо event loop завис — файл стає застарілим.
+
+    Свіжість перевіряє scripts/check-heartbeat.sh на хості (див. NEXT_STEPS.md).
+    """
+    while True:
+        path.write_text(str(int(time.time())))
+        await asyncio.sleep(interval)
 
 
 def run_migrations() -> None:
@@ -70,8 +81,14 @@ async def main() -> None:
         ]
     )
     await bot.delete_webhook(drop_pending_updates=True)
+    heartbeat = asyncio.create_task(
+        heartbeat_loop(Path(settings.database_path).parent / "heartbeat")
+    )
     logging.info("Бот запущено (long polling)")
-    await dp.start_polling(bot)
+    try:
+        await dp.start_polling(bot)
+    finally:
+        heartbeat.cancel()
 
 
 if __name__ == "__main__":

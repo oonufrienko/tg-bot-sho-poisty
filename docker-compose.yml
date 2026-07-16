@@ -5,3 +5,9 @@ services:
     env_file: .env
     volumes:
       - ./data:/app/data
+    # json-file без лімітів росте нескінченно — на 45 ГБ диску це питання часу
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

@@ -4,27 +4,20 @@
 # топік живе в /etc/ntfy-bot-watch.env, НЕ в репозиторії.
 set -euo pipefail
 
-: "${NTFY_TOPIC:?NTFY_TOPIC не задано}"
-NTFY_SERVER="${NTFY_SERVER:-https://ntfy.sh}"
+DIR="$(cd "$(dirname "$0")" && pwd)"
 CONTAINER="${CONTAINER:-tg-bot-sho-poisty-bot-1}"
 
-# JSON-публікація: заголовки HTTP не дружать з кирилицею, тіло — дружить.
 notify() { # $1 title, $2 priority (1-5), $3 tags через кому, $4 message
-    jq -cn --arg topic "$NTFY_TOPIC" --arg title "$1" --argjson prio "$2" \
-        --arg tags "$3" --arg msg "$4" \
-        '{topic: $topic, title: $title, priority: $prio,
-          tags: ($tags | split(",")), message: $msg}' \
-        | curl -fsS --max-time 10 -d @- "$NTFY_SERVER" >/dev/null \
-        || echo "ntfy недоступний, подію втрачено: $1" >&2
+    "$DIR/ntfy-send.sh" "$@" || echo "ntfy недоступний, подію втрачено: $1" >&2
 }
 
 docker events \
     --filter "container=$CONTAINER" \
     --filter type=container \
     --filter event=start --filter event=die --filter event=oom \
-    --format '{{.Status}} {{index .Actor.Attributes "exitCode"}}' \
-| while read -r status exit_code; do
-    case "$status" in
+    --format '{{.Action}} {{index .Actor.Attributes "exitCode"}}' \
+| while read -r action exit_code; do
+    case "$action" in
         start)
             notify "Бот піднявся" 3 "green_circle" \
                 "Контейнер $CONTAINER запущено."
