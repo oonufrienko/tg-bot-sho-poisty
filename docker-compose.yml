@@ -2,6 +2,9 @@ services:
   bot:
     build: .
     restart: unless-stopped
+    # aiogram завершує long polling довше за стандартні 10с — без цього
+    # docker при редеплої вбиває бота SIGKILL (exit 137, фальшивий «БОТ ВПАВ»)
+    stop_grace_period: 30s
     env_file: .env
     volumes:
       - ./data:/app/data
