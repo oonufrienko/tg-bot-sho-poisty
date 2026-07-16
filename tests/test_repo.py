@@ -273,3 +273,25 @@ async def test_category_filter(session):
     assert [r.title for r in breakfast] == ["Сирники"]
     both = await repo.group_recipes(session, user.active_group_id, ["lunch", "breakfast"])
     assert len(both) == 2
+
+
+async def test_clear_served_wipes_history_for_group_only(session):
+    user, recipe = await _make_user_with_recipe(session, tg_id=1)
+    stranger, their_recipe = await _make_user_with_recipe(session, tg_id=2)
+    for u, r in ((user, recipe), (stranger, their_recipe)):
+        await repo.record_serve(
+            session,
+            group_id=u.active_group_id,
+            recipe_id=r.id,
+            user_id=u.tg_user_id,
+            meal_type="lunch",
+            served_on=date.today(),
+        )
+
+    await repo.clear_served(session, user.active_group_id)
+
+    assert await repo.recent_served(session, user.active_group_id) == []
+    # після очищення страви одразу можуть рекомендуватись знову
+    assert await repo.recently_served_ids(session, user.active_group_id, days=7) == set()
+    # чужа група лишається як була
+    assert len(await repo.recent_served(session, stranger.active_group_id)) == 1

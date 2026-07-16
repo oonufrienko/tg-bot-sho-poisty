@@ -54,7 +54,7 @@ class GroupCB(CallbackData, prefix="grp"):
 
 
 class RecentCB(CallbackData, prefix="recent"):
-    kind: str  # all | served
+    kind: str  # all | served | clear | clear_yes
 
 
 class ListActionCB(CallbackData, prefix="lst"):
@@ -204,6 +204,38 @@ def delete_confirm_keyboard(recipe_id: int) -> InlineKeyboardMarkup:
                 ),
                 InlineKeyboardButton(
                     text="↩️ Ні", callback_data=DishCB(action="del_no").pack()
+                ),
+            ]
+        ]
+    )
+
+
+def served_actions_keyboard() -> InlineKeyboardMarkup:
+    """Дія під списком рекомендованих."""
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="🧹 Очистити історію",
+                    callback_data=RecentCB(kind="clear").pack(),
+                )
+            ]
+        ]
+    )
+
+
+def clear_served_confirm_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="🧹 Так, очистити",
+                    callback_data=RecentCB(kind="clear_yes").pack(),
+                ),
+                InlineKeyboardButton(
+                    text="↩️ Скасувати",
+                    # «Скасувати» просто перемальовує список рекомендованих
+                    callback_data=RecentCB(kind="served").pack(),
                 ),
             ]
         ]
