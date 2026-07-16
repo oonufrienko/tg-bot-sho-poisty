@@ -1,0 +1,36 @@
+name: Test & Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # ручний запуск — перевірити SSH-зв'язок до першого мержу
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false # деплої йдуть по черзі, не обриваються
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --extra dev
+      - run: uv run pytest
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15 # docker build на 1 ГБ RAM буває повільним
+    steps:
+      - name: Prepare SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+      - name: Deploy
+        run: >
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes
+          "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}"
+          'bash ~/tg-bot-sho-poisty/scripts/deploy.sh'

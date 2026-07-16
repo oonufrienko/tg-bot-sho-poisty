@@ -53,6 +53,11 @@ docker compose up -d --build
 docker compose logs -f bot   # подивитись логи
 ```
 
+Деплой автоматичний: пуш у `main` (мерж PR) запускає тести й деплой на сервер
+через [.github/workflows/deploy.yml](.github/workflows/deploy.yml) —
+по SSH виконується `scripts/deploy.sh`. Ручний деплой — той самий скрипт
+або команди вище (деталі в [NEXT_STEPS.md](NEXT_STEPS.md)).
+
 База SQLite лежить у `./data/bot.db` — бекап це просто копія цього файлу.
 
 ### Очистити базу з нуля
