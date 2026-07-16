@@ -39,6 +39,28 @@ def render_recipe(recipe: Recipe, full: bool = True) -> str:
     return "\n".join(lines)
 
 
+def render_recipe_list(recipes: list[Recipe]) -> tuple[str, list[int]]:
+    """Список за категоріями. Повертає (текст, id у порядку нумерації)."""
+    sections: dict[str, list[Recipe]] = {key: [] for key in CATEGORIES}
+    for recipe in recipes:
+        keys = recipe.category_keys
+        key = keys[0] if keys and keys[0] in CATEGORIES else "general"
+        sections[key].append(recipe)
+
+    lines = ["📖 <b>Усі рецепти:</b>"]
+    ids: list[int] = []
+    for key, items in sections.items():
+        if not items:
+            continue
+        lines.append("")
+        lines.append(f"<b>{CATEGORIES[key]}</b>")
+        for recipe in items:
+            ids.append(recipe.id)
+            stars = f" {'⭐' * recipe.difficulty}" if recipe.difficulty else ""
+            lines.append(f"{len(ids)}. {escape(recipe.title)}{stars}")
+    return "\n".join(lines), ids
+
+
 def render_menu_day(day: int, slots: list[dict], recipes: dict[int, Recipe]) -> str:
     lines = [f"📅 <b>День {day}</b>"]
     for slot in slots:

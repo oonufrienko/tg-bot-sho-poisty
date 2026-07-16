@@ -30,7 +30,7 @@ from bot.keyboards.common import (
     options_keyboard,
     recent_keyboard,
 )
-from bot.rendering import render_recipe
+from bot.rendering import render_recipe, render_recipe_list
 from bot.services import retrieval
 from bot.services.ingestion import RecipeInput, collect_input
 from bot.services.llm.base import LLMClient, LLMError, LLMQuotaError, QueryIntent
@@ -124,31 +124,29 @@ async def recent_list(
     await query.answer()
     if user.active_group_id is None or not isinstance(query.message, Message):
         return
-    markup = None
     if callback_data.kind == "all":
         recipes = await repo.group_recipes(session, user.active_group_id)
         if not recipes:
             await query.message.answer("У базі поки немає рецептів.")
             return
-        lines = ["📖 <b>Усі рецепти:</b>\n"]
-        lines += [f"{i}. {escape(r.title)}" for i, r in enumerate(recipes, 1)]
+        text, ids = render_recipe_list(recipes)
         # Номери живуть у стані: користувач вводить їх, а не recipe_id.
         await state.set_state(None)
-        await state.update_data(list_ids=[r.id for r in recipes])
-        markup = list_actions_keyboard()
-    else:
-        served = await repo.recent_served(session, user.active_group_id, limit=10)
-        if not served:
-            await query.message.answer("Я ще нічого не рекомендував 🙂")
-            return
-        lines = ["🕐 <b>Останні рекомендовані страви:</b>\n"]
-        lines += [
-            f"{i}. {escape(r.title)}"
-            + (f" ({MEAL_LABELS[sh.meal_type]}, {sh.served_on:%d.%m})"
-               if sh.meal_type in MEAL_LABELS else f" ({sh.served_on:%d.%m})")
-            for i, (sh, r) in enumerate(served, 1)
-        ]
-    await send_long(query.message, "\n".join(lines), reply_markup=markup)
+        await state.update_data(list_ids=ids)
+        await send_long(query.message, text, reply_markup=list_actions_keyboard())
+        return
+    served = await repo.recent_served(session, user.active_group_id, limit=10)
+    if not served:
+        await query.message.answer("Я ще нічого не рекомендував 🙂")
+        return
+    lines = ["🕐 <b>Останні рекомендовані страви:</b>\n"]
+    lines += [
+        f"{i}. {escape(r.title)}"
+        + (f" ({MEAL_LABELS[sh.meal_type]}, {sh.served_on:%d.%m})"
+           if sh.meal_type in MEAL_LABELS else f" ({sh.served_on:%d.%m})")
+        for i, (sh, r) in enumerate(served, 1)
+    ]
+    await send_long(query.message, "\n".join(lines))
 
 
 def _meal_type(intent: QueryIntent) -> str | None:
