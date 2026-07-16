@@ -24,13 +24,15 @@ from bot.keyboards.common import (
     RecentCB,
     ask_keyboard,
     cancel_number_keyboard,
+    clear_served_confirm_keyboard,
     delete_confirm_keyboard,
     dish_keyboard,
     list_actions_keyboard,
     options_keyboard,
     recent_keyboard,
+    served_actions_keyboard,
 )
-from bot.rendering import render_recipe, render_recipe_list
+from bot.rendering import render_recipe, render_recipe_list, render_served_list
 from bot.services import retrieval
 from bot.services.ingestion import RecipeInput, collect_input
 from bot.services.llm.base import LLMClient, LLMError, LLMQuotaError, QueryIntent
@@ -135,18 +137,27 @@ async def recent_list(
         await state.update_data(list_ids=ids)
         await send_long(query.message, text, reply_markup=list_actions_keyboard())
         return
+    if callback_data.kind == "clear":
+        await query.message.answer(
+            "Очистити історію рекомендацій?\n"
+            "Зазвичай я не повторюю страву 7 днів — після очищення "
+            "ці страви знову зможуть потрапляти в поради одразу.",
+            reply_markup=clear_served_confirm_keyboard(),
+        )
+        return
+    if callback_data.kind == "clear_yes":
+        await repo.clear_served(session, user.active_group_id)
+        await query.message.answer("Історію очищено 🧹")
+        return
     served = await repo.recent_served(session, user.active_group_id, limit=10)
     if not served:
         await query.message.answer("Я ще нічого не рекомендував 🙂")
         return
-    lines = ["🕐 <b>Останні рекомендовані страви:</b>\n"]
-    lines += [
-        f"{i}. {escape(r.title)}"
-        + (f" ({MEAL_LABELS[sh.meal_type]}, {sh.served_on:%d.%m})"
-           if sh.meal_type in MEAL_LABELS else f" ({sh.served_on:%d.%m})")
-        for i, (sh, r) in enumerate(served, 1)
-    ]
-    await send_long(query.message, "\n".join(lines))
+    await send_long(
+        query.message,
+        render_served_list(served),
+        reply_markup=served_actions_keyboard(),
+    )
 
 
 def _meal_type(intent: QueryIntent) -> str | None:

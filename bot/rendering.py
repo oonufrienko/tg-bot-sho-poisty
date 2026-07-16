@@ -39,19 +39,21 @@ def render_recipe(recipe: Recipe, full: bool = True) -> str:
     return "\n".join(lines)
 
 
+def _by_category(items: list, recipe_of) -> list[tuple[str, list]]:
+    """Групує за першою категорією рецепта, секції у порядку CATEGORIES."""
+    sections: dict[str, list] = {key: [] for key in CATEGORIES}
+    for item in items:
+        keys = recipe_of(item).category_keys
+        key = keys[0] if keys and keys[0] in CATEGORIES else "general"
+        sections[key].append(item)
+    return [(key, items) for key, items in sections.items() if items]
+
+
 def render_recipe_list(recipes: list[Recipe]) -> tuple[str, list[int]]:
     """Список за категоріями. Повертає (текст, id у порядку нумерації)."""
-    sections: dict[str, list[Recipe]] = {key: [] for key in CATEGORIES}
-    for recipe in recipes:
-        keys = recipe.category_keys
-        key = keys[0] if keys and keys[0] in CATEGORIES else "general"
-        sections[key].append(recipe)
-
     lines = ["📖 <b>Усі рецепти:</b>"]
     ids: list[int] = []
-    for key, items in sections.items():
-        if not items:
-            continue
+    for key, items in _by_category(recipes, lambda r: r):
         lines.append("")
         lines.append(f"<b>{CATEGORIES[key]}</b>")
         for recipe in items:
@@ -59,6 +61,24 @@ def render_recipe_list(recipes: list[Recipe]) -> tuple[str, list[int]]:
             stars = f" {'⭐' * recipe.difficulty}" if recipe.difficulty else ""
             lines.append(f"{len(ids)}. {escape(recipe.title)}{stars}")
     return "\n".join(lines), ids
+
+
+def render_served_list(served: list[tuple]) -> str:
+    """Останні рекомендовані страви за категоріями: (ServeHistory, Recipe)."""
+    lines = ["🕐 <b>Останні рекомендовані страви:</b>"]
+    n = 0
+    for key, items in _by_category(served, lambda pair: pair[1]):
+        lines.append("")
+        lines.append(f"<b>{CATEGORIES[key]}</b>")
+        for sh, recipe in items:
+            n += 1
+            when = (
+                f"{MEAL_LABELS[sh.meal_type]}, {sh.served_on:%d.%m}"
+                if sh.meal_type in MEAL_LABELS
+                else f"{sh.served_on:%d.%m}"
+            )
+            lines.append(f"{n}. {escape(recipe.title)} ({when})")
+    return "\n".join(lines)
 
 
 def render_menu_day(day: int, slots: list[dict], recipes: dict[int, Recipe]) -> str:

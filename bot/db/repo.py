@@ -304,6 +304,12 @@ async def recently_served_ids(
     return set(rows.scalars())
 
 
+async def clear_served(session: AsyncSession, group_id: int) -> None:
+    """Очищає історію рекомендацій групи — страви знову можуть радитись одразу."""
+    await session.execute(delete(ServeHistory).where(ServeHistory.group_id == group_id))
+    await session.commit()
+
+
 async def recent_served(
     session: AsyncSession, group_id: int, limit: int = 10
 ) -> list[tuple[ServeHistory, Recipe]]:
