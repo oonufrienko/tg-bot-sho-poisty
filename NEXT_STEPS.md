@@ -98,6 +98,26 @@ sudo systemctl restart ntfy-bot-watch      # перезапуск (напр., п
 🟡 «Бот зупинено» (штатна зупинка/редеплой), 🟢 «Бот піднявся», 🔴 OOM.
 Під час редеплою пара «зупинено → піднявся» — це нормально.
 
+**Проти зависань (heartbeat).** Контейнер може бути «Up», а бот усередині —
+завис. Тому бот щохвилини пише unix-час у `data/heartbeat`
+(`heartbeat_loop` у [bot/main.py](bot/main.py)), а таймер
+`ntfy-heartbeat-check` кожні 3 хв перевіряє свіжість через
+[scripts/check-heartbeat.sh](scripts/check-heartbeat.sh): контейнер працює,
+а файлу понад 5 хв → 🔴 «БОТ ЗАВИС» (один аларм на епізод, потім «відвис»).
+Ліки від зависання: `docker compose restart bot` (env не мінявся — можна).
+
+**Диск і сміття від білдів.** Кожен деплой з `--build` лишає dangling-образи.
+Таймер `docker-image-prune` раз на тиждень робить `docker image prune -f`
+(тільки dangling, `-a` не можна — знесе образи сусідніх ботів), а таймер
+`ntfy-disk-check` кожні 6 год шле 🔴, якщо диск заповнений понад 85%
+([scripts/server-maint.sh](scripts/server-maint.sh)). Логи контейнера
+обмежені в compose (`max-size: 10m` × 3 файли) — не ростуть нескінченно.
+
+```bash
+systemctl list-timers 'ntfy-*' 'docker-image-prune*'   # чи живі таймери
+journalctl -u ntfy-heartbeat-check -n 10               # логи перевірки
+```
+
 ## Про сервер
 
 На цій же машині крутяться чужі контейнери — `tg-news-filter` і `my-tg-bot`.
