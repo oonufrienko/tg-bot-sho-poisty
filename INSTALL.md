@@ -7,7 +7,7 @@
 
 | Юніт | Що робить | Як часто |
 |---|---|---|
-| `ntfy-bot-watch.service` | слухає `docker events`: 🔴 падіння/OOM, 🟡 зупинка, 🟢 старт | постійно |
+| `ntfy-bot-watch.service` | слухає `docker events`: 🔴 падіння/OOM, 🟡 зупинка, 🟢 «піднявся» (чекає готовності за heartbeat) | постійно |
 | `ntfy-heartbeat-check.timer` | 🔴 «БОТ ЗАВИС», якщо контейнер Up, а heartbeat застарів | кожні 3 хв |
 | `ntfy-disk-check.timer` | 🔴 диск заповнений понад 85% | кожні 6 год |
 | `docker-image-prune.timer` | прибирає dangling-образи від `--build` (тільки їх!) | щотижня |

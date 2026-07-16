@@ -6,9 +6,26 @@ set -euo pipefail
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 CONTAINER="${CONTAINER:-tg-bot-sho-poisty-bot-1}"
+HEARTBEAT="${HEARTBEAT:-$DIR/../data/heartbeat}"
+READY_TIMEOUT="${READY_TIMEOUT:-90}"   # скільки секунд чекати готовності бота
 
 notify() { # $1 title, $2 priority (1-5), $3 tags через кому, $4 message
     "$DIR/ntfy-send.sh" "$@" || echo "ntfy недоступний, подію втрачено: $1" >&2
+}
+
+# Подія start означає лише «процес запущено» — бот ще ганяє міграції.
+# Готовність = heartbeat, записаний ПІСЛЯ старту контейнера.
+wait_ready() {
+    local started deadline mtime
+    started=$(date -d "$(docker inspect -f '{{.State.StartedAt}}' "$CONTAINER" 2>/dev/null)" +%s 2>/dev/null) \
+        || return 1
+    deadline=$(( $(date +%s) + READY_TIMEOUT ))
+    while [ "$(date +%s)" -lt "$deadline" ]; do
+        mtime=$(stat -c %Y "$HEARTBEAT" 2>/dev/null || echo 0)
+        [ "$mtime" -ge "$started" ] && return 0
+        sleep 5
+    done
+    return 1
 }
 
 docker events \
@@ -19,8 +36,13 @@ docker events \
 | while read -r action exit_code; do
     case "$action" in
         start)
-            notify "Бот піднявся" 3 "green_circle" \
-                "Контейнер $CONTAINER запущено."
+            if wait_ready; then
+                notify "Бот піднявся" 3 "green_circle" \
+                    "Бот працює: heartbeat свіжіший за старт контейнера."
+            else
+                notify "Бот не вийшов на роботу" 5 "rotating_light" \
+                    "Контейнер $CONTAINER стартував, але heartbeat не з'явився за ${READY_TIMEOUT}с. Дивись: docker compose logs bot | tail -30"
+            fi
             ;;
         die)
             # 0 — чистий вихід, 143 — SIGTERM (compose stop/редеплой)
