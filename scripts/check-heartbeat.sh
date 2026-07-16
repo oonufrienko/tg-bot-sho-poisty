@@ -15,6 +15,7 @@ CONTAINER="${CONTAINER:-tg-bot-sho-poisty-bot-1}"
 HEARTBEAT="${HEARTBEAT:-$DIR/../data/heartbeat}"
 MAX_AGE="${MAX_AGE:-300}"                 # секунд без оновлення = «завис»
 RESTART_COOLDOWN="${RESTART_COOLDOWN:-1800}"  # не частіше 1 авторестарту на 30 хв
+RESTART_GRACE="${RESTART_GRACE:-300}"     # скільки чекати після рестарту, перш ніж ескалювати
 STATE="${STATE:-/var/tmp/ntfy-heartbeat.state}"
 # Час останнього авторестарту тримаємо окремо від STATE: він має переживати
 # «відвис» (скидання епізоду), інакше кулдаун не захистить від петлі
@@ -55,10 +56,15 @@ case "$prev" in
         fi
         ;;
     stale)
-        # Рестарт уже був, а heartbeat так і не ожив — самолікування не спрацювало.
+        # Рестарт уже був. Даємо боту RESTART_GRACE на запуск (міграції,
+        # webhook, перший heartbeat) — ескалюємо лише коли час вийшов.
+        last=$(cat "$LAST_RESTART" 2>/dev/null || echo 0)
+        if [ $(( now - last )) -lt "$RESTART_GRACE" ]; then
+            exit 0
+        fi
         echo stale-escalated > "$STATE"
         "$DIR/ntfy-send.sh" "Рестарт не допоміг — потрібні руки" 5 "sos" \
-            "Після авторестарту heartbeat досі не оновлюється (${age}с). Подивіться: docker compose logs bot"
+            "Через $(( now - last ))с після авторестарту heartbeat досі не оновлюється. Подивіться: docker compose logs bot"
         ;;
     *)
         # stale-escalated: людину вже покликали, мовчимо до кінця епізоду.

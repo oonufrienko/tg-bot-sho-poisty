@@ -66,7 +66,9 @@ sudo sh -c '. /etc/ntfy-bot-watch.env && export NTFY_TOPIC && /home/ubuntu/tg-bo
   `/var/tmp/ntfy-heartbeat.state`.
 - Пороги міняються без правки коду: env-змінні `MAX_AGE` (heartbeat, сек),
   `RESTART_COOLDOWN` (мінімальна пауза між авторестартами при зависанні, сек,
-  типово 1800) і `THRESHOLD` (диск, %) можна дописати у
+  типово 1800), `RESTART_GRACE` (скільки чекати оживання heartbeat після
+  авторестарту, перш ніж ескалювати, сек, типово 300) і `THRESHOLD` (диск, %)
+  можна дописати у
   `/etc/ntfy-bot-watch.env`, після чого `sudo systemctl restart ntfy-bot-watch`
   (таймери підхоплять самі). Мітка останнього авторестарту —
   `/var/tmp/ntfy-heartbeat.last-restart`.
