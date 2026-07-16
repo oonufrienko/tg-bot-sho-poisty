@@ -7,16 +7,22 @@
 
 ## Оновити код
 
+**Само собою:** мерж PR у `main` запускає тести й деплой — GitHub Actions
+заходить по SSH і виконує `scripts/deploy.sh` (git pull + rebuild). Статус —
+вкладка Actions на GitHub. Хвилини за 2–3 після мержу бот уже на новому коді.
+
+Руками (якщо Actions лежить або треба терміново):
+
 ```bash
 ssh ubuntu@oracle
 cd ~/tg-bot-sho-poisty
-git pull
-docker compose up -d --build
+./scripts/deploy.sh
 docker compose logs -f bot        # має бути «Бот запущено (long polling)»; вихід — Ctrl+C
 ```
 
-**`--build` обов'язковий.** Без нього `up -d` бере вже зібраний образ, і бот
-мовчки працюватиме на старому коді — саме так виникає крешлуп після `git pull`.
+**`--build` обов'язковий** (скрипт робить його сам). Без нього `up -d` бере вже
+зібраний образ, і бот мовчки працюватиме на старому коді — саме так виникає
+крешлуп після `git pull`.
 
 ## Змінити .env (ключі, список доступу)
 
@@ -67,6 +73,9 @@ cp data/bot.db ~/backup-recipes-$(date +%F).db    # бекап бази реце
 - **«Це приватний сімейний бот»** → вашого id немає в `ALLOWED_USER_IDS`,
   або після зміни зробили `restart` замість `up -d`.
 - **Бот на старому коді після `git pull`** → забули `--build`.
+- **Деплой в Actions упав з «незакомічені зміни»** → на сервері хтось правив
+  файли під git. Зайти, подивитись `git status`, закомітити чи відкотити —
+  і перезапустити workflow (Re-run jobs).
 - **Кода немає в логах взагалі** → лог обривається одразу після міграцій?
   Такого більше не має бути, але саме так виглядав баг, коли alembic збивав
   root-логер на WARN.
@@ -75,3 +84,14 @@ cp data/bot.db ~/backup-recipes-$(date +%F).db    # бекап бази реце
 
 На цій же машині крутяться чужі контейнери — `tg-news-filter` і `my-tg-bot`.
 Не чіпати: `docker system prune -a` та подібне знесе і їх.
+
+**Після перезавантаження сервера бот піднімається сам**: у compose стоїть
+`restart: unless-stopped`, а служба docker увімкнена на старті. Перевірити:
+
+```bash
+docker compose ps                 # бот має бути Up
+docker inspect -f '{{.HostConfig.RestartPolicy.Name}}' tg-bot-sho-poisty-bot-1
+```
+
+Нюанс: після `docker compose down` контейнера немає і підніматись нічому —
+поверне його лише `docker compose up -d`.
