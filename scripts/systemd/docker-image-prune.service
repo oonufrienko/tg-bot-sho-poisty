@@ -1,0 +1,8 @@
+[Unit]
+Description=Prune dangling docker images left by compose builds
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/home/ubuntu/tg-bot-sho-poisty/scripts/server-maint.sh prune
+User=ubuntu

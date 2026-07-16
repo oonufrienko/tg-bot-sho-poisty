@@ -1,0 +1,14 @@
+[Unit]
+Description=ntfy alerts for tg-bot-sho-poisty container events
+After=docker.service
+Requires=docker.service
+
+[Service]
+EnvironmentFile=/etc/ntfy-bot-watch.env
+ExecStart=/home/ubuntu/tg-bot-sho-poisty/scripts/ntfy-docker-watch.sh
+User=ubuntu
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

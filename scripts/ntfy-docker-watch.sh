@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Слухає docker events контейнера бота і шле сповіщення в ntfy.
-# Запускається systemd-сервісом ntfy-bot-watch на хості (див. NEXT_STEPS.md);
+# Запускається systemd-сервісом ntfy-bot-watch на хості (див. RUNBOOK.md);
 # топік живе в /etc/ntfy-bot-watch.env, НЕ в репозиторії.
 set -euo pipefail
 

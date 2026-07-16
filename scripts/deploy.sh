@@ -17,6 +17,6 @@ fi
 git fetch origin main
 git merge --ff-only origin/main
 
-# --build обов'язковий: без нього up -d підніме старий образ (див. NEXT_STEPS.md).
+# --build обов'язковий: без нього up -d підніме старий образ (див. RUNBOOK.md).
 docker compose up -d --build
 docker compose ps

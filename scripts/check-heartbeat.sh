@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Аларм у ntfy, якщо контейнер працює, а heartbeat бота застарів (бот завис).
-# Запускається systemd-таймером ntfy-heartbeat-check кожні 3 хв (NEXT_STEPS.md).
+# Запускається systemd-таймером ntfy-heartbeat-check кожні 3 хв (RUNBOOK.md).
 # Heartbeat пише сам бот: heartbeat_loop у bot/main.py, файл data/heartbeat.
 set -euo pipefail
 
