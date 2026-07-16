@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Обслуговування хоста, кличуть systemd-таймери (NEXT_STEPS.md):
+# Обслуговування хоста, кличуть systemd-таймери (RUNBOOK.md):
 #   server-maint.sh disk   — аларм у ntfy, якщо диск заповнений понад поріг
 #   server-maint.sh prune  — прибрати dangling-образи, що лишає кожен --build
 set -euo pipefail

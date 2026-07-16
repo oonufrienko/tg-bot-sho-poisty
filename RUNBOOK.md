@@ -84,6 +84,7 @@ cp data/bot.db ~/backup-recipes-$(date +%F).db    # бекап бази реце
 
 Сповіщення про падіння/зупинку/підняття контейнера приходять у додаток ntfy
 (топік — в `/etc/ntfy-bot-watch.env` на сервері, в git його немає).
+Встановлення вотчерів з нуля — в [INSTALL.md](INSTALL.md); тут — щоденне.
 Працює це так: systemd-сервіс `ntfy-bot-watch` на хості слухає `docker events`
 через [scripts/ntfy-docker-watch.sh](scripts/ntfy-docker-watch.sh) і шле POST
 на ntfy.sh. Сервіс живе поза Docker, тому переживає і ребут, і `compose down`.

@@ -1,0 +1,9 @@
+[Unit]
+Description=Check disk usage every 6 hours
+
+[Timer]
+OnBootSec=15min
+OnUnitActiveSec=6h
+
+[Install]
+WantedBy=timers.target

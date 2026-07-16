@@ -1,0 +1,8 @@
+[Unit]
+Description=Alert via ntfy when root disk usage exceeds threshold
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/ntfy-bot-watch.env
+ExecStart=/home/ubuntu/tg-bot-sho-poisty/scripts/server-maint.sh disk
+User=ubuntu

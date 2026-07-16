@@ -1,0 +1,9 @@
+[Unit]
+Description=Alert via ntfy when the bot heartbeat goes stale
+After=docker.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/ntfy-bot-watch.env
+ExecStart=/home/ubuntu/tg-bot-sho-poisty/scripts/check-heartbeat.sh
+User=ubuntu
