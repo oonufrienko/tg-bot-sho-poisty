@@ -210,6 +210,43 @@ async def delete_recipe(
     return title
 
 
+async def update_recipe(
+    session: AsyncSession,
+    recipe_id: int,
+    group_id: int,
+    *,
+    title: str,
+    ingredients: list[dict],
+    steps: str,
+    categories: list[str],
+    difficulty: int | None,
+    calories: int | None,
+) -> Recipe | None:
+    """Оновлює рецепт на місці. Повертає оновлений або None, якщо не знайдено.
+
+    media, source_type і original_text не чіпаємо: редагування править текст
+    рецепта, а не його походження.
+    """
+    recipe = await get_recipe(session, recipe_id, group_id)
+    if recipe is None:
+        return None
+    recipe.title = title
+    recipe.ingredients = ingredients
+    recipe.steps = steps
+    recipe.difficulty = difficulty
+    recipe.calories = calories
+    # Категорії міняємо через relationship, а не DELETE-запитом: колекція вже
+    # завантажена (lazy="selectin") і при expire_on_commit=False лишилась би
+    # старою в пам'яті. clear()+flush прибирає рядки (cascade delete-orphan)
+    # до вставки нових — інакше повтор категорії ламає складений PK.
+    recipe.categories.clear()
+    await session.flush()
+    for cat in dict.fromkeys(categories):
+        recipe.categories.append(RecipeCategory(recipe_id=recipe_id, category=cat))
+    await session.commit()
+    return recipe
+
+
 async def group_recipes(
     session: AsyncSession, group_id: int, categories: list[str] | None = None
 ) -> list[Recipe]:
@@ -219,18 +256,6 @@ async def group_recipes(
             RecipeCategory, RecipeCategory.recipe_id == Recipe.id
         ).where(RecipeCategory.category.in_(categories)).distinct()
     rows = await session.execute(query.order_by(Recipe.created_at.desc()))
-    return list(rows.scalars().unique())
-
-
-async def recent_recipes(
-    session: AsyncSession, group_id: int, limit: int = 10
-) -> list[Recipe]:
-    rows = await session.execute(
-        select(Recipe)
-        .where(Recipe.group_id == group_id)
-        .order_by(Recipe.created_at.desc())
-        .limit(limit)
-    )
     return list(rows.scalars().unique())
 
 

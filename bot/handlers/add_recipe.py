@@ -79,6 +79,7 @@ async def show_confirmation(
     state: FSMContext,
     extraction: RecipeExtraction,
     recipe_input: RecipeInput,
+    edit_id: int | None = None,
 ) -> None:
     categories = list(extraction.suggested_categories) or ["general"]
     if extraction.calories and "diet" not in categories:
@@ -93,6 +94,9 @@ async def show_confirmation(
         media=recipe_input.media,
         orig_text=recipe_input.text,
         dup_ok=False,  # нова картка — перевірка дубліката спрацює заново
+        # Задаємо завжди: update_data зливає, тож без цього edit_id від
+        # покинутого редагування прилип би і «Зберегти» переписало б чужий рецепт.
+        edit_id=edit_id,
     )
     card = render_extraction_card(
         extraction.title,
@@ -209,7 +213,10 @@ async def amend_apply(
     await progress.delete()
     recipe_input.text = data.get("orig_text")
     extraction.is_recipe = True
-    await show_confirmation(message, state, extraction, recipe_input)
+    # Якщо «Доповнити» натиснули під час редагування — лишаємось у режимі правки.
+    await show_confirmation(
+        message, state, extraction, recipe_input, edit_id=data.get("edit_id")
+    )
 
 
 @router.callback_query(AddStates.confirming, ConfirmCB.filter(F.action == "save"))
@@ -241,6 +248,34 @@ async def save_recipe(
         await query.answer("Немає активної групи", show_alert=True)
         return
 
+    edit_id = data.get("edit_id")
+    if edit_id:
+        updated = await repo.update_recipe(
+            session,
+            edit_id,
+            user.active_group_id,
+            title=title,
+            ingredients=ingredients,
+            steps=steps,
+            categories=data.get("cats") or ["general"],
+            difficulty=data.get("diff"),
+            calories=extraction.get("calories"),
+        )
+        if updated is None:
+            await query.answer(
+                "Рецепт уже видалено або він з іншої групи.", show_alert=True
+            )
+            return
+        await state.clear()
+        await query.answer("Оновлено!")
+        if isinstance(query.message, Message):
+            await query.message.edit_reply_markup(reply_markup=None)
+            await send_long(
+                query.message, "✅ Оновлено:\n\n" + render_recipe(updated)
+            )
+        return
+
+    # Перевірка дубліката лише для нового рецепта: правка завжди «знайшла б» саму себе.
     existing = await repo.find_recipe_by_title(session, user.active_group_id, title)
     if existing is not None and not data.get("dup_ok"):
         await state.update_data(dup_ok=True)

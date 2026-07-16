@@ -77,6 +77,78 @@ async def test_delete_recipe_removes_serve_history(session):
     assert await repo.recently_served_ids(session, user.active_group_id, days=7) == set()
 
 
+async def test_update_recipe_replaces_fields_and_categories(session):
+    user, recipe = await _make_user_with_recipe(session)  # "Борщ", lunch
+    updated = await repo.update_recipe(
+        session,
+        recipe.id,
+        user.active_group_id,
+        title="Зелений борщ",
+        ingredients=[{"name": "щавель", "qty": "1", "unit": "пучок"}],
+        steps="Варити зі щавлем.",
+        categories=["dinner", "diet"],
+        difficulty=3,
+        calories=450,
+    )
+    assert updated is not None
+    assert updated.id == recipe.id  # той самий запис, не копія
+    assert updated.title == "Зелений борщ"
+    assert [i["name"] for i in updated.ingredients] == ["щавель"]
+    assert sorted(updated.category_keys) == ["diet", "dinner"]
+    assert (updated.difficulty, updated.calories) == (3, 450)
+    assert len(await repo.group_recipes(session, user.active_group_id)) == 1
+
+
+async def test_update_recipe_keeps_origin_and_serve_history(session):
+    """Правка міняє текст рецепта, а не його походження чи історію подач."""
+    user, recipe = await _make_user_with_recipe(session)
+    await repo.record_serve(
+        session,
+        group_id=user.active_group_id,
+        recipe_id=recipe.id,
+        user_id=user.tg_user_id,
+        meal_type="lunch",
+        served_on=date.today(),
+    )
+    updated = await repo.update_recipe(
+        session,
+        recipe.id,
+        user.active_group_id,
+        title="Борщ",
+        ingredients=[],
+        steps="Інакше.",
+        categories=["lunch"],
+        difficulty=None,
+        calories=None,
+    )
+    assert updated is not None
+    assert updated.source_type == "text"
+    assert recipe.id in await repo.recently_served_ids(
+        session, user.active_group_id, days=7
+    )
+
+
+async def test_update_recipe_enforces_group_isolation(session):
+    user, recipe = await _make_user_with_recipe(session)
+    stranger = await repo.ensure_user(session, 2, "Сусідка")
+    assert (
+        await repo.update_recipe(
+            session,
+            recipe.id,
+            stranger.active_group_id,
+            title="Викрадений борщ",
+            ingredients=[],
+            steps="",
+            categories=["lunch"],
+            difficulty=None,
+            calories=None,
+        )
+        is None
+    )
+    untouched = await repo.get_recipe(session, recipe.id, user.active_group_id)
+    assert untouched is not None and untouched.title == "Борщ"
+
+
 async def test_delete_recipe_enforces_group_isolation(session):
     user, recipe = await _make_user_with_recipe(session, tg_id=1)
     stranger = await repo.ensure_user(session, 2, "Сусідка")
