@@ -26,7 +26,7 @@ logging.basicConfig(
 async def heartbeat_loop(path: Path, interval: float = 60.0) -> None:
     """Пише unix-час у файл; якщо event loop завис — файл стає застарілим.
 
-    Свіжість перевіряє scripts/check-heartbeat.sh на хості (див. NEXT_STEPS.md).
+    Свіжість перевіряє scripts/check-heartbeat.sh на хості (див. RUNBOOK.md).
     """
     while True:
         path.write_text(str(int(time.time())))
