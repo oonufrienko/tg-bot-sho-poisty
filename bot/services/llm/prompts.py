@@ -9,9 +9,9 @@ EXTRACT_RECIPE = """\
 - Якщо чогось немає або не видно (обрізане фото, нечитабельний текст) — залиш \
 поле порожнім і додай пункт у missing_info з конкретним питанням до користувача.
 - is_recipe=false, якщо вхід взагалі не схожий на рецепт чи перелік страв.
-- suggested_categories: обери з breakfast/lunch/dinner/dessert/salad/diet/general \
+- suggested_categories: обери з breakfast/lunch/dinner/dessert/salad/general \
 (можна кілька). Якщо в тексті явно вказані калорії (напр. 1200 ккал, 350 kcal) — \
-заповни calories числом і додай категорію diet.
+заповни calories числом.
 - difficulty: 1 (швидко і просто) … 4 (довго/складно) — оціни за кількістю кроків \
 і часом. Якщо оцінити неможливо — залиш порожнім.
 - steps: збережи всі кроки одним текстом, кожен крок з нового рядка.
@@ -36,7 +36,7 @@ ROUTE_QUERY = """\
 - help_or_chat: усе інше (привітання, питання про бота).
 
 Параметри заповнюй ЛИШЕ якщо вони явно випливають із запиту:
-- meal_types: breakfast/lunch/dinner/dessert/salad/diet/general \
+- meal_types: breakfast/lunch/dinner/dessert/salad/general \
 («до чаю» → dessert; «до чаю не солодке» → general).
 - include_ingredients / exclude_ingredients — базові назви продуктів \
 («з курки» → include курка).

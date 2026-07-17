@@ -11,7 +11,7 @@ from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
 CategoryKey = Literal[
-    "breakfast", "lunch", "dinner", "dessert", "salad", "diet", "general"
+    "breakfast", "lunch", "dinner", "dessert", "salad", "general"
 ]
 MealKey = Literal["breakfast", "lunch", "dinner"]
 

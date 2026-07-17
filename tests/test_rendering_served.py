@@ -1,4 +1,4 @@
-"""render_served_list: рекомендовані за категоріями, суфікс (прийом їжі, дата)."""
+"""render_served_list: групування за датами, свіжа дата зверху."""
 
 from datetime import date
 
@@ -20,34 +20,44 @@ def pair(recipe_id, title, cats=(), meal_type=None, served_on=None):
     return sh, recipe
 
 
-def test_sections_follow_categories_order():
+def test_groups_by_date_latest_first():
     text = render_served_list(
         [
-            pair(1, "Плов", ["dinner"]),
-            pair(2, "Сирники", ["breakfast"]),
+            pair(1, "Салат", served_on=date(2026, 7, 16)),
+            pair(2, "Сирники", meal_type="breakfast", served_on=date(2026, 7, 17)),
         ]
     )
     assert text.startswith("🕐 <b>Останні рекомендовані страви:</b>")
-    assert text.index("🍳 Сніданок") < text.index("🌙 Вечеря")
+    assert text.index("<b>17.07</b>") < text.index("<b>16.07</b>")
+    # рядок дня — «Прийом: Назва», без нумерації
+    assert "Сніданок: Сирники" in text
+    assert "Загальна: Салат" in text
 
 
-def test_meal_and_date_suffix():
-    text = render_served_list([pair(1, "Борщ", ["lunch"], meal_type="lunch")])
-    assert "Борщ (Обід, 12.07)" in text
-
-
-def test_date_only_when_meal_unknown():
-    text = render_served_list([pair(1, "Борщ", ["lunch"], meal_type="tea")])
-    assert "Борщ (12.07)" in text
-
-
-def test_no_category_falls_into_general_with_sequential_numbers():
+def test_meals_ordered_within_a_day():
+    day = date(2026, 7, 17)
     text = render_served_list(
         [
-            pair(7, "Плов"),
-            pair(8, "Сирники", ["breakfast"]),
+            pair(1, "Плов", meal_type="dinner", served_on=day),
+            pair(2, "Борщ", meal_type="lunch", served_on=day),
+            pair(3, "Сирники", meal_type="breakfast", served_on=day),
         ]
     )
-    assert "🍽 Загальна" in text
-    assert "1. Сирники" in text  # сніданок іде першим у порядку CATEGORIES
-    assert "2. Плов" in text
+    assert text.count("<b>17.07</b>") == 1
+    assert (
+        text.index("Сніданок: Сирники")
+        < text.index("Обід: Борщ")
+        < text.index("Вечеря: Плов")
+    )
+
+
+def test_unknown_meal_goes_last_as_general():
+    day = date(2026, 7, 17)
+    text = render_served_list(
+        [
+            pair(1, "Чай", meal_type="tea", served_on=day),
+            pair(2, "Плов", meal_type="dinner", served_on=day),
+        ]
+    )
+    # невідомий прийом їжі падає в «Загальна» і йде після відомих
+    assert text.index("Вечеря: Плов") < text.index("Загальна: Чай")

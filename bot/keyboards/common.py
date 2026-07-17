@@ -93,7 +93,7 @@ def confirm_keyboard(selected: list[str], difficulty: int | None) -> InlineKeybo
     for key, label in CATEGORIES.items():
         mark = "✅ " if key in selected else ""
         builder.button(text=f"{mark}{label}", callback_data=ConfirmCB(action="cat", value=key))
-    builder.adjust(2, 2, 2, 1)
+    builder.adjust(2, 2, 2)
 
     stars = InlineKeyboardBuilder()
     for level in range(1, 5):

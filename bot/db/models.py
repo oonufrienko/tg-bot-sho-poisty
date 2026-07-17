@@ -13,7 +13,6 @@ CATEGORIES: dict[str, str] = {
     "dinner": "🌙 Вечеря",
     "dessert": "🍰 Десерт",
     "salad": "🥗 Салати",
-    "diet": "🥦 Дієта",
     "general": "🍽 Загальна",
 }
 
