@@ -25,9 +25,9 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "bot/db/models.py": {
-    "mtime": 1784001195.890615,
-    "ast_hash": "a351335d341289172c92706f1f793036",
-    "semantic_hash": "a351335d341289172c92706f1f793036"
+    "mtime": 1784316153.948804,
+    "ast_hash": "22a38744591e0224a2aeaf35628f3666",
+    "semantic_hash": "22a38744591e0224a2aeaf35628f3666"
   },
   "bot/db/repo.py": {
     "mtime": 1784215948.2147176,
@@ -45,9 +45,9 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "bot/handlers/add_recipe.py": {
-    "mtime": 1784215948.2157793,
-    "ast_hash": "4f1dd69eee6f8cca3e7a9d3cc3e5a98b",
-    "semantic_hash": "4f1dd69eee6f8cca3e7a9d3cc3e5a98b"
+    "mtime": 1784316186.6783774,
+    "ast_hash": "6176c564ffc5f5ed934e257ea7ce4ddf",
+    "semantic_hash": "6176c564ffc5f5ed934e257ea7ce4ddf"
   },
   "bot/handlers/group.py": {
     "mtime": 1784041378.7096345,
@@ -75,12 +75,12 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "bot/keyboards/common.py": {
-    "mtime": 1784215948.2199173,
-    "ast_hash": "622c1bffdef57fc4997198aed6a60666",
-    "semantic_hash": "622c1bffdef57fc4997198aed6a60666"
+    "mtime": 1784316193.5618167,
+    "ast_hash": "a665a083edc7871946b2bb4ed8aac38d",
+    "semantic_hash": "a665a083edc7871946b2bb4ed8aac38d"
   },
   "bot/main.py": {
-    "mtime": 1784265378.758237,
+    "mtime": 1784316089.7622721,
     "ast_hash": "41ac58bb73947be436a788a0387d6ffb",
     "semantic_hash": "41ac58bb73947be436a788a0387d6ffb"
   },
@@ -90,9 +90,9 @@
     "semantic_hash": "381241b6289744ec324c68d11b81ef98"
   },
   "bot/rendering.py": {
-    "mtime": 1784215948.222776,
-    "ast_hash": "e9c49e3f054adf1040b86f62c9bb84a2",
-    "semantic_hash": "e9c49e3f054adf1040b86f62c9bb84a2"
+    "mtime": 1784316228.2221246,
+    "ast_hash": "ead17102afd9c9cc561cf6bd3333c36b",
+    "semantic_hash": "ead17102afd9c9cc561cf6bd3333c36b"
   },
   "bot/services/__init__.py": {
     "mtime": 1783966358.7176816,
@@ -110,9 +110,9 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "bot/services/llm/base.py": {
-    "mtime": 1784041378.7167213,
-    "ast_hash": "5e98fb3b1380d53818d09b901b405811",
-    "semantic_hash": "5e98fb3b1380d53818d09b901b405811"
+    "mtime": 1784316159.058793,
+    "ast_hash": "b4b7f382f9bd4b743e3c262be0a01707",
+    "semantic_hash": "b4b7f382f9bd4b743e3c262be0a01707"
   },
   "bot/services/llm/gemini.py": {
     "mtime": 1784041378.7174594,
@@ -120,9 +120,9 @@
     "semantic_hash": "2f38549df7c39a36c43aa5d2c0d6dbdf"
   },
   "bot/services/llm/prompts.py": {
-    "mtime": 1783966003.624375,
-    "ast_hash": "afba9d2ab0446f6cf04cc15072a2ddf3",
-    "semantic_hash": "afba9d2ab0446f6cf04cc15072a2ddf3"
+    "mtime": 1784316170.6372957,
+    "ast_hash": "097f3188e7ff2355dc91e4b64ef8b931",
+    "semantic_hash": "097f3188e7ff2355dc91e4b64ef8b931"
   },
   "bot/services/menu_planner.py": {
     "mtime": 1783966081.8735917,
@@ -155,9 +155,9 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "tests/test_repo.py": {
-    "mtime": 1784215948.2718244,
-    "ast_hash": "d766cd65bcc82c20cedeb42d9f06c212",
-    "semantic_hash": "d766cd65bcc82c20cedeb42d9f06c212"
+    "mtime": 1784316214.8989813,
+    "ast_hash": "abb6c22b0ceb99cf7e8095dae353e2d1",
+    "semantic_hash": "abb6c22b0ceb99cf7e8095dae353e2d1"
   },
   "tests/test_shopping_list.py": {
     "mtime": 1783966389.2980847,
@@ -165,9 +165,9 @@
     "semantic_hash": "59df36c72ef47dde73201dfd8b53384b"
   },
   "README.md": {
-    "mtime": 1784215948.2125695,
-    "ast_hash": "40fd5659ee01872079d4f442dfd3fd43",
-    "semantic_hash": "40fd5659ee01872079d4f442dfd3fd43"
+    "mtime": 1784316326.7584047,
+    "ast_hash": "32632d909dc783d0aa149c883aa3b5bd",
+    "semantic_hash": "32632d909dc783d0aa149c883aa3b5bd"
   },
   "docker-compose.yml": {
     "mtime": 1784215948.2236779,
@@ -270,9 +270,9 @@
     "semantic_hash": "9a9fc1faa127042044c9eb3d3824347b"
   },
   "tests/test_rendering_served.py": {
-    "mtime": 1784215948.270263,
-    "ast_hash": "6ca96c7039e09c9d412c08c050827c49",
-    "semantic_hash": "6ca96c7039e09c9d412c08c050827c49"
+    "mtime": 1784316274.3845267,
+    "ast_hash": "c7f3258c6d16d5b81aa46242f4e37184",
+    "semantic_hash": "c7f3258c6d16d5b81aa46242f4e37184"
   },
   ".github/workflows/deploy.yml": {
     "mtime": 1784215948.2104144,
@@ -280,13 +280,18 @@
     "semantic_hash": "76d5ffcc52ceef1ac662126ba0dd13b3"
   },
   "INSTALL.md": {
-    "mtime": 1784265371.033509,
+    "mtime": 1784316089.7582853,
     "ast_hash": "717b77af08ab69c50348226462990607",
     "semantic_hash": "717b77af08ab69c50348226462990607"
   },
   "RUNBOOK.md": {
-    "mtime": 1784265297.788921,
+    "mtime": 1784316089.75908,
     "ast_hash": "28e2a30f366cb1d4063eba022bed9bda",
     "semantic_hash": "28e2a30f366cb1d4063eba022bed9bda"
+  },
+  "alembic/versions/b3c41d92ae51_drop_diet_category.py": {
+    "mtime": 1784316206.187379,
+    "ast_hash": "054e558126552afa7e6eff2ac4233a44",
+    "semantic_hash": "054e558126552afa7e6eff2ac4233a44"
   }
 }
