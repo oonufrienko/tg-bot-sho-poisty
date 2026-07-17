@@ -63,21 +63,26 @@ def render_recipe_list(recipes: list[Recipe]) -> tuple[str, list[int]]:
     return "\n".join(lines), ids
 
 
+# Порядок рядків усередині дня: сніданок → обід → вечеря → без прийому їжі.
+_MEAL_ORDER = {key: i for i, key in enumerate(MEAL_LABELS)}
+
+
 def render_served_list(served: list[tuple]) -> str:
-    """Останні рекомендовані страви за категоріями: (ServeHistory, Recipe)."""
+    """Останні рекомендовані за датами (свіжа зверху): (ServeHistory, Recipe)."""
+    days: dict = {}
+    for sh, recipe in served:
+        days.setdefault(sh.served_on, []).append((sh, recipe))
+
     lines = ["🕐 <b>Останні рекомендовані страви:</b>"]
-    n = 0
-    for key, items in _by_category(served, lambda pair: pair[1]):
+    for day in sorted(days, reverse=True):
         lines.append("")
-        lines.append(f"<b>{CATEGORIES[key]}</b>")
-        for sh, recipe in items:
-            n += 1
-            when = (
-                f"{MEAL_LABELS[sh.meal_type]}, {sh.served_on:%d.%m}"
-                if sh.meal_type in MEAL_LABELS
-                else f"{sh.served_on:%d.%m}"
-            )
-            lines.append(f"{n}. {escape(recipe.title)} ({when})")
+        lines.append(f"<b>{day:%d.%m}</b>")
+        entries = sorted(
+            days[day], key=lambda pair: _MEAL_ORDER.get(pair[0].meal_type, len(_MEAL_ORDER))
+        )
+        for sh, recipe in entries:
+            label = MEAL_LABELS.get(sh.meal_type, "Загальна")
+            lines.append(f"{label}: {escape(recipe.title)}")
     return "\n".join(lines)
 
 
