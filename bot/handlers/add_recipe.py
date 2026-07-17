@@ -82,8 +82,6 @@ async def show_confirmation(
     edit_id: int | None = None,
 ) -> None:
     categories = list(extraction.suggested_categories) or ["general"]
-    if extraction.calories and "diet" not in categories:
-        categories.append("diet")
 
     await state.set_state(AddStates.confirming)
     await state.update_data(

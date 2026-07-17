@@ -86,7 +86,7 @@ async def test_update_recipe_replaces_fields_and_categories(session):
         title="Зелений борщ",
         ingredients=[{"name": "щавель", "qty": "1", "unit": "пучок"}],
         steps="Варити зі щавлем.",
-        categories=["dinner", "diet"],
+        categories=["dinner", "salad"],
         difficulty=3,
         calories=450,
     )
@@ -94,7 +94,7 @@ async def test_update_recipe_replaces_fields_and_categories(session):
     assert updated.id == recipe.id  # той самий запис, не копія
     assert updated.title == "Зелений борщ"
     assert [i["name"] for i in updated.ingredients] == ["щавель"]
-    assert sorted(updated.category_keys) == ["diet", "dinner"]
+    assert sorted(updated.category_keys) == ["dinner", "salad"]
     assert (updated.difficulty, updated.calories) == (3, 450)
     assert len(await repo.group_recipes(session, user.active_group_id)) == 1
 
