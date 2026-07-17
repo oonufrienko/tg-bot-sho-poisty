@@ -4,17 +4,29 @@
   "graph": {
     "hyperedges": [
       {
-        "id": "hyper_ntfy_monitoring_stack",
-        "label": "ntfy monitoring stack (systemd units + scripts + heartbeat)",
+        "id": "hyper_hang_detection_chain",
+        "label": "Hang detection and auto-restart chain: bot heartbeat \u2192 timer check \u2192 restart \u2192 ntfy alerts",
+        "nodes": [
+          "bot_main_heartbeat_loop",
+          "install_ntfy_heartbeat_check_timer",
+          "scripts_check_heartbeat_sh",
+          "runbook_heartbeat_state_files",
+          "scripts_ntfy_send"
+        ],
+        "relation": "form",
+        "confidence": "EXTRACTED",
+        "confidence_score": 1.0,
+        "source_file": "RUNBOOK.md"
+      },
+      {
+        "id": "hyper_host_watchers",
+        "label": "Host-side systemd watcher suite living outside Docker",
         "nodes": [
           "install_ntfy_bot_watch_service",
           "install_ntfy_heartbeat_check_timer",
           "install_ntfy_disk_check_timer",
           "install_docker_image_prune_timer",
-          "scripts_ntfy_send_sh",
-          "scripts_check_heartbeat_sh",
-          "scripts_ntfy_docker_watch_sh",
-          "scripts_server_maint_sh"
+          "install_ntfy_bot_watch_env"
         ],
         "relation": "form",
         "confidence": "EXTRACTED",
@@ -22,19 +34,17 @@
         "source_file": "INSTALL.md"
       },
       {
-        "id": "hyper_hang_detection_pipeline",
-        "label": "Hang detection and recovery pipeline",
+        "id": "hyper_autodeploy_pipeline",
+        "label": "Autodeploy pipeline: merge to main \u2192 GitHub Actions \u2192 SSH \u2192 deploy.sh",
         "nodes": [
-          "bot_main_heartbeat_loop",
-          "runbook_heartbeat_mechanism",
-          "scripts_check_heartbeat_sh",
-          "runbook_auto_restart_on_hang",
-          "runbook_startup_readiness_check"
+          "github_workflows_deploy",
+          "scripts_deploy_sh",
+          "install_autodeploy_setup"
         ],
         "relation": "implement",
         "confidence": "EXTRACTED",
         "confidence_score": 1.0,
-        "source_file": "RUNBOOK.md"
+        "source_file": "INSTALL.md"
       },
       {
         "id": "automated_deploy_pipeline",
@@ -105,7 +115,7 @@
       "source_file": "alembic/versions/f82a10d770df_initial_schema.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 17,
+      "community": 18,
       "norm_label": "f82a10d770df_initial_schema.py",
       "id": "alembic_versions_f82a10d770df_initial_schema"
     },
@@ -115,7 +125,7 @@
       "source_file": "alembic/versions/f82a10d770df_initial_schema.py",
       "source_location": "L20",
       "_origin": "ast",
-      "community": 17,
+      "community": 18,
       "norm_label": "upgrade()",
       "id": "alembic_versions_f82a10d770df_initial_schema_upgrade"
     },
@@ -125,7 +135,7 @@
       "source_file": "alembic/versions/f82a10d770df_initial_schema.py",
       "source_location": "L103",
       "_origin": "ast",
-      "community": 17,
+      "community": 18,
       "norm_label": "downgrade()",
       "id": "alembic_versions_f82a10d770df_initial_schema_downgrade"
     },
@@ -135,7 +145,7 @@
       "source_file": "bot/__init__.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 34,
+      "community": 33,
       "norm_label": "__init__.py",
       "id": "bot_init"
     },
@@ -145,7 +155,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": "basesettings",
       "id": "basesettings"
     },
@@ -155,7 +165,7 @@
       "source_file": "bot/db/__init__.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 23,
+      "community": 22,
       "norm_label": "__init__.py",
       "id": "bot_db_init"
     },
@@ -255,7 +265,7 @@
       "source_file": "bot/db/models.py",
       "source_location": "L73",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "recipe",
       "id": "bot_db_models_recipe"
     },
@@ -265,7 +275,7 @@
       "source_file": "bot/db/models.py",
       "source_location": "L97",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": ".category_keys()",
       "id": "bot_db_models_recipe_category_keys"
     },
@@ -325,7 +335,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": "async_sessionmaker",
       "id": "async_sessionmaker"
     },
@@ -335,7 +345,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": "asyncsession",
       "id": "bot_db_session_py_asyncsession"
     },
@@ -345,7 +355,7 @@
       "source_file": "bot/handlers/__init__.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 25,
+      "community": 24,
       "norm_label": "__init__.py",
       "id": "bot_handlers_init"
     },
@@ -355,7 +365,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "statesgroup",
       "id": "bot_handlers_add_recipe_py_statesgroup"
     },
@@ -365,7 +375,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "message",
       "id": "bot_handlers_add_recipe_py_message"
     },
@@ -375,7 +385,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "fsmcontext",
       "id": "bot_handlers_add_recipe_py_fsmcontext"
     },
@@ -385,7 +395,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "bot",
       "id": "bot_handlers_add_recipe_py_bot"
     },
@@ -395,7 +405,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "callbackquery",
       "id": "bot_handlers_add_recipe_py_callbackquery"
     },
@@ -405,7 +415,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "asyncsession",
       "id": "bot_handlers_add_recipe_py_asyncsession"
     },
@@ -465,7 +475,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 0,
+      "community": 14,
       "norm_label": "message",
       "id": "bot_handlers_menu_py_message"
     },
@@ -475,7 +485,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 0,
+      "community": 14,
       "norm_label": "fsmcontext",
       "id": "bot_handlers_menu_py_fsmcontext"
     },
@@ -485,7 +495,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 0,
+      "community": 14,
       "norm_label": "asyncsession",
       "id": "bot_handlers_menu_py_asyncsession"
     },
@@ -495,7 +505,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 0,
+      "community": 14,
       "norm_label": "callbackquery",
       "id": "bot_handlers_menu_py_callbackquery"
     },
@@ -505,7 +515,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "message",
       "id": "bot_handlers_query_py_message"
     },
@@ -515,7 +525,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 29,
+      "community": 28,
       "norm_label": "callbackquery",
       "id": "bot_handlers_query_py_callbackquery"
     },
@@ -525,7 +535,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "asyncsession",
       "id": "bot_handlers_query_py_asyncsession"
     },
@@ -535,7 +545,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 30,
+      "community": 29,
       "norm_label": "fsmcontext",
       "id": "bot_handlers_query_py_fsmcontext"
     },
@@ -545,7 +555,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 28,
+      "community": 27,
       "norm_label": "bot",
       "id": "bot_handlers_query_py_bot"
     },
@@ -585,7 +595,7 @@
       "source_file": "bot/keyboards/__init__.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 36,
+      "community": 35,
       "norm_label": "__init__.py",
       "id": "bot_keyboards_init"
     },
@@ -605,7 +615,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "callbackdata",
       "id": "callbackdata"
     },
@@ -615,7 +625,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 35,
+      "community": 34,
       "norm_label": "inlinekeyboardmarkup",
       "id": "bot_keyboards_common_py_inlinekeyboardmarkup"
     },
@@ -625,7 +635,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": "basemiddleware",
       "id": "basemiddleware"
     },
@@ -635,7 +645,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": "telegramobject",
       "id": "telegramobject"
     },
@@ -645,7 +655,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": "any",
       "id": "any"
     },
@@ -655,7 +665,7 @@
       "source_file": "bot/services/__init__.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 37,
+      "community": 36,
       "norm_label": "__init__.py",
       "id": "bot_services_init"
     },
@@ -665,7 +675,7 @@
       "source_file": "bot/services/ingestion.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 15,
+      "community": 17,
       "norm_label": "ingestion.py",
       "id": "bot_services_ingestion"
     },
@@ -675,7 +685,7 @@
       "source_file": "bot/services/ingestion.py",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 15,
+      "community": 17,
       "norm_label": "recipeinput",
       "id": "bot_services_ingestion_recipeinput"
     },
@@ -685,7 +695,7 @@
       "source_file": "bot/services/ingestion.py",
       "source_location": "L23",
       "_origin": "ast",
-      "community": 15,
+      "community": 17,
       "norm_label": "collect_input()",
       "id": "bot_services_ingestion_collect_input"
     },
@@ -695,7 +705,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 15,
+      "community": 17,
       "norm_label": "message",
       "id": "bot_services_ingestion_py_message"
     },
@@ -705,7 +715,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 15,
+      "community": 17,
       "norm_label": "bot",
       "id": "bot_services_ingestion_py_bot"
     },
@@ -715,7 +725,7 @@
       "source_file": "bot/services/ingestion.py",
       "source_location": "L62",
       "_origin": "ast",
-      "community": 15,
+      "community": 17,
       "norm_label": "_download()",
       "id": "bot_services_ingestion_download"
     },
@@ -725,7 +735,7 @@
       "source_file": "bot/services/ingestion.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 15,
+      "community": 17,
       "norm_label": "\u043f\u0435\u0440\u0435\u0442\u0432\u043e\u0440\u0435\u043d\u043d\u044f \u043f\u043e\u0432\u0456\u0434\u043e\u043c\u043b\u0435\u043d\u043d\u044f telegram \u043d\u0430 \u0432\u0445\u0456\u0434 \u0434\u043b\u044f \u0435\u043a\u0441\u0442\u0440\u0430\u043a\u0446\u0456\u0456 \u0440\u0435\u0446\u0435\u043f\u0442\u0430.",
       "id": "bot_services_ingestion_rationale_1"
     },
@@ -735,7 +745,7 @@
       "source_file": "bot/services/ingestion.py",
       "source_location": "L24",
       "_origin": "ast",
-      "community": 15,
+      "community": 17,
       "norm_label": "\u0432\u0438\u0442\u044f\u0433\u0443\u0454 \u0442\u0435\u043a\u0441\u0442 \u0456 \u0444\u0430\u0438\u043b\u0438 \u0437 \u043f\u043e\u0432\u0456\u0434\u043e\u043c\u043b\u0435\u043d\u043d\u044f (\u0444\u043e\u0442\u043e/\u0441\u043a\u0440\u0456\u043d/pdf/\u0442\u0435\u043a\u0441\u0442/\u0444\u043e\u0440\u0432\u0430\u0440\u0434).",
       "id": "bot_services_ingestion_rationale_24"
     },
@@ -745,7 +755,7 @@
       "source_file": "bot/services/llm/__init__.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 38,
+      "community": 37,
       "norm_label": "__init__.py",
       "id": "bot_services_llm_init"
     },
@@ -755,7 +765,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "basemodel",
       "id": "basemodel"
     },
@@ -765,7 +775,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 43,
+      "community": 42,
       "norm_label": "exception",
       "id": "exception"
     },
@@ -775,7 +785,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "abc",
       "id": "abc"
     },
@@ -785,7 +795,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "t",
       "id": "t"
     },
@@ -795,7 +805,7 @@
       "source_file": "bot/services/llm/prompts.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "prompts.py",
       "id": "bot_services_llm_prompts"
     },
@@ -805,7 +815,7 @@
       "source_file": "bot/services/menu_planner.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "menu_planner.py",
       "id": "bot_services_menu_planner"
     },
@@ -815,7 +825,7 @@
       "source_file": "bot/services/menu_planner.py",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "plan_menu()",
       "id": "bot_services_menu_planner_plan_menu"
     },
@@ -825,7 +835,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "asyncsession",
       "id": "bot_services_menu_planner_py_asyncsession"
     },
@@ -835,7 +845,7 @@
       "source_file": "bot/services/menu_planner.py",
       "source_location": "L50",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "replace_slot()",
       "id": "bot_services_menu_planner_replace_slot"
     },
@@ -845,7 +855,7 @@
       "source_file": "bot/services/menu_planner.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "\u043c\u0435\u043d\u044e \u043d\u0430 \u0434\u0435\u043d\u044c/\u0442\u0438\u0436\u0434\u0435\u043d\u044c: \u043a\u0430\u043d\u0434\u0438\u0434\u0430\u0442\u0438 \u0437 \u0431\u0434 \u2192 llm \u0440\u043e\u0437\u0441\u0442\u0430\u0432\u043b\u044f\u0454 id \u043f\u043e \u0441\u043b\u043e\u0442\u0430\u0445.",
       "id": "bot_services_menu_planner_rationale_1"
     },
@@ -855,7 +865,7 @@
       "source_file": "bot/services/menu_planner.py",
       "source_location": "L58",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "\u0437\u0430\u043c\u0456\u043d\u044e\u0454 \u043e\u0434\u043d\u0443 \u043f\u043e\u0437\u0438\u0446\u0456\u044e \u043c\u0435\u043d\u044e. \u043f\u043e\u0432\u0435\u0440\u0442\u0430\u0454 \u043d\u043e\u0432\u0438\u0438 recipe_id (\u0430\u0431\u043e none) \u0456 \u043a\u0430\u043d\u0434\u0438\u0434\u0430\u0442\u0456\u0432.",
       "id": "bot_services_menu_planner_rationale_58"
     },
@@ -865,7 +875,7 @@
       "source_file": "bot/services/retrieval.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "retrieval.py",
       "id": "bot_services_retrieval"
     },
@@ -875,7 +885,7 @@
       "source_file": "bot/services/retrieval.py",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "compact()",
       "id": "bot_services_retrieval_compact"
     },
@@ -885,7 +895,7 @@
       "source_file": "bot/services/retrieval.py",
       "source_location": "L27",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "_matches_ingredients()",
       "id": "bot_services_retrieval_matches_ingredients"
     },
@@ -895,7 +905,7 @@
       "source_file": "bot/services/retrieval.py",
       "source_location": "L39",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "gather_candidates()",
       "id": "bot_services_retrieval_gather_candidates"
     },
@@ -905,7 +915,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "asyncsession",
       "id": "bot_services_retrieval_py_asyncsession"
     },
@@ -915,7 +925,7 @@
       "source_file": "bot/services/retrieval.py",
       "source_location": "L70",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "find_dish()",
       "id": "bot_services_retrieval_find_dish"
     },
@@ -925,7 +935,7 @@
       "source_file": "bot/services/retrieval.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "\u043f\u0456\u0434\u0431\u0456\u0440 \u0441\u0442\u0440\u0430\u0432: \u043a\u043e\u0434 \u0434\u0456\u0441\u0442\u0430\u0454 \u043a\u0430\u043d\u0434\u0438\u0434\u0430\u0442\u0456\u0432 \u0437 \u0431\u0434, llm \u043b\u0438\u0448\u0435 \u043e\u0431\u0438\u0440\u0430\u0454 id \u0437 \u043d\u0438\u0445.",
       "id": "bot_services_retrieval_rationale_1"
     },
@@ -935,7 +945,7 @@
       "source_file": "bot/services/retrieval.py",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "\u043a\u043e\u043c\u043f\u0430\u043a\u0442\u043d\u0435 \u043f\u043e\u0434\u0430\u043d\u043d\u044f \u0440\u0435\u0446\u0435\u043f\u0442\u0456\u0432 \u0434\u043b\u044f \u043f\u0440\u043e\u043c\u043f\u0442\u0430 (\u0431\u0435\u0437 \u043f\u043e\u0432\u043d\u043e\u0433\u043e \u0442\u0435\u043a\u0441\u0442\u0443 \u043a\u0440\u043e\u043a\u0456\u0432).",
       "id": "bot_services_retrieval_rationale_13"
     },
@@ -945,7 +955,7 @@
       "source_file": "bot/services/shopping_list.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": "shopping_list.py",
       "id": "bot_services_shopping_list"
     },
@@ -955,7 +965,7 @@
       "source_file": "bot/services/shopping_list.py",
       "source_location": "L11",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": "parse_qty()",
       "id": "bot_services_shopping_list_parse_qty"
     },
@@ -965,7 +975,7 @@
       "source_file": "bot/services/shopping_list.py",
       "source_location": "L24",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": "_format_amount()",
       "id": "bot_services_shopping_list_format_amount"
     },
@@ -975,7 +985,7 @@
       "source_file": "bot/services/shopping_list.py",
       "source_location": "L28",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": "aggregate()",
       "id": "bot_services_shopping_list_aggregate"
     },
@@ -985,7 +995,7 @@
       "source_file": "bot/services/shopping_list.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": "\u0430\u0433\u0440\u0435\u0433\u0430\u0446\u0456\u044f \u0456\u043d\u0433\u0440\u0435\u0434\u0456\u0454\u043d\u0442\u0456\u0432 \u0443 \u0441\u043f\u0438\u0441\u043e\u043a \u043f\u043e\u043a\u0443\u043f\u043e\u043a.",
       "id": "bot_services_shopping_list_rationale_1"
     },
@@ -995,7 +1005,7 @@
       "source_file": "bot/services/shopping_list.py",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": "\u00ab1,5\u00bb \u2192 1.5; \u00ab1/2\u00bb \u2192 0.5; \u00ab2-3\u00bb \u2192 3 (\u0431\u0435\u0440\u0435\u043c\u043e \u0431\u0456\u043b\u044c\u0448\u0435, \u0449\u043e\u0431 \u0442\u043e\u0447\u043d\u043e \u0432\u0438\u0441\u0442\u0430\u0447\u0438\u043b\u043e).",
       "id": "bot_services_shopping_list_rationale_12"
     },
@@ -1005,7 +1015,7 @@
       "source_file": "bot/services/shopping_list.py",
       "source_location": "L29",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": "\u0441\u0443\u043c\u0443\u0454 \u043a\u0456\u043b\u044c\u043a\u043e\u0441\u0442\u0456 \u0437\u0430 (\u043d\u0430\u0437\u0432\u0430, \u043e\u0434\u0438\u043d\u0438\u0446\u044f). \u043f\u043e\u0432\u0435\u0440\u0442\u0430\u0454 \u0433\u043e\u0442\u043e\u0432\u0456 \u0440\u044f\u0434\u043a\u0438 \u0441\u043f\u0438\u0441\u043a\u0443 \u043f\u043e\u043a\u0443\u043f\u043e\u043a.",
       "id": "bot_services_shopping_list_rationale_29"
     },
@@ -1015,7 +1025,7 @@
       "source_file": "bot/utils.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 6,
+      "community": 14,
       "norm_label": "utils.py",
       "id": "bot_utils"
     },
@@ -1025,7 +1035,7 @@
       "source_file": "bot/utils.py",
       "source_location": "L7",
       "_origin": "ast",
-      "community": 6,
+      "community": 14,
       "norm_label": "send_long()",
       "id": "bot_utils_send_long"
     },
@@ -1035,7 +1045,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 6,
+      "community": 14,
       "norm_label": "message",
       "id": "bot_utils_py_message"
     },
@@ -1045,7 +1055,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 6,
+      "community": 14,
       "norm_label": "inlinekeyboardmarkup",
       "id": "bot_utils_py_inlinekeyboardmarkup"
     },
@@ -1055,7 +1065,7 @@
       "source_file": "bot/utils.py",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 6,
+      "community": 14,
       "norm_label": "\u043d\u0430\u0434\u0441\u0438\u043b\u0430\u0454 \u0434\u043e\u0432\u0433\u0438\u0438 \u0442\u0435\u043a\u0441\u0442 \u043a\u0456\u043b\u044c\u043a\u043e\u043c\u0430 \u043f\u043e\u0432\u0456\u0434\u043e\u043c\u043b\u0435\u043d\u043d\u044f\u043c\u0438, \u0440\u0456\u0436\u0443\u0447\u0438 \u043f\u043e \u0440\u044f\u0434\u043a\u0430\u0445.      \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430",
       "id": "bot_utils_rationale_12"
     },
@@ -1065,7 +1075,7 @@
       "source_file": "tests/__init__.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 47,
+      "community": 46,
       "norm_label": "__init__.py",
       "id": "tests_init"
     },
@@ -1075,7 +1085,7 @@
       "source_file": "tests/test_shopping_list.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": "test_shopping_list.py",
       "id": "tests_test_shopping_list"
     },
@@ -1085,7 +1095,7 @@
       "source_file": "tests/test_shopping_list.py",
       "source_location": "L4",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": "test_parse_qty_variants()",
       "id": "tests_test_shopping_list_test_parse_qty_variants"
     },
@@ -1095,7 +1105,7 @@
       "source_file": "tests/test_shopping_list.py",
       "source_location": "L15",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": "test_aggregate_sums_same_ingredient_and_unit()",
       "id": "tests_test_shopping_list_test_aggregate_sums_same_ingredient_and_unit"
     },
@@ -1105,7 +1115,7 @@
       "source_file": "tests/test_shopping_list.py",
       "source_location": "L24",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": "test_aggregate_keeps_different_units_separate()",
       "id": "tests_test_shopping_list_test_aggregate_keeps_different_units_separate"
     },
@@ -1115,7 +1125,7 @@
       "source_file": "tests/test_shopping_list.py",
       "source_location": "L33",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": "test_aggregate_decimal_comma_output()",
       "id": "tests_test_shopping_list_test_aggregate_decimal_comma_output"
     },
@@ -1125,7 +1135,7 @@
       "source_file": "tests/test_shopping_list.py",
       "source_location": "L41",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": "test_aggregate_unparsed_qty_becomes_note()",
       "id": "tests_test_shopping_list_test_aggregate_unparsed_qty_becomes_note"
     },
@@ -1135,7 +1145,7 @@
       "source_file": "tests/test_shopping_list.py",
       "source_location": "L51",
       "_origin": "ast",
-      "community": 14,
+      "community": 16,
       "norm_label": "test_aggregate_mixed_parsed_and_note_for_same_name()",
       "id": "tests_test_shopping_list_test_aggregate_mixed_parsed_and_note_for_same_name"
     },
@@ -1185,7 +1195,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 0,
+      "community": 14,
       "norm_label": "user",
       "id": "bot_handlers_menu_py_user"
     },
@@ -1195,7 +1205,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 26,
+      "community": 25,
       "norm_label": "llmclient",
       "id": "bot_handlers_menu_py_llmclient"
     },
@@ -1205,7 +1215,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 27,
+      "community": 26,
       "norm_label": "queryintent",
       "id": "bot_handlers_menu_py_queryintent"
     },
@@ -1215,7 +1225,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 45,
+      "community": 44,
       "norm_label": "recentcb",
       "id": "recentcb"
     },
@@ -1225,7 +1235,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "user",
       "id": "bot_handlers_query_py_user"
     },
@@ -1235,7 +1245,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 32,
+      "community": 31,
       "norm_label": "queryintent",
       "id": "bot_handlers_query_py_queryintent"
     },
@@ -1245,7 +1255,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 31,
+      "community": 30,
       "norm_label": "llmclient",
       "id": "bot_handlers_query_py_llmclient"
     },
@@ -1255,7 +1265,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 42,
+      "community": 41,
       "norm_label": "dishcb",
       "id": "dishcb"
     },
@@ -1265,7 +1275,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "bot",
       "id": "bot"
     },
@@ -1275,7 +1285,7 @@
       "source_file": "bot/middlewares.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": "middlewares.py",
       "id": "bot_middlewares"
     },
@@ -1285,7 +1295,7 @@
       "source_file": "bot/middlewares.py",
       "source_location": "L22",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": "accessdbmiddleware",
       "id": "bot_middlewares_accessdbmiddleware"
     },
@@ -1295,7 +1305,7 @@
       "source_file": "bot/middlewares.py",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": ".__call__()",
       "id": "bot_middlewares_accessdbmiddleware_call"
     },
@@ -1305,7 +1315,7 @@
       "source_file": "bot/middlewares.py",
       "source_location": "L23",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": "whitelist + \u0441\u0435\u0441\u0456\u044f \u0431\u0434 + \u0440\u0435\u0454\u0441\u0442\u0440\u0430\u0446\u0456\u044f \u043a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0430 \u0434\u043b\u044f \u043a\u043e\u0436\u043d\u043e\u0433\u043e \u0430\u043f\u0434\u0435\u0438\u0442\u0430.",
       "id": "bot_middlewares_rationale_23"
     },
@@ -1325,7 +1335,7 @@
       "source_file": "tests/test_architecture.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "test_architecture.py",
       "id": "tests_test_architecture"
     },
@@ -1335,7 +1345,7 @@
       "source_file": "tests/test_architecture.py",
       "source_location": "L17",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "_parse()",
       "id": "tests_test_architecture_parse"
     },
@@ -1345,7 +1355,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 3,
+      "community": 1,
       "norm_label": "path",
       "id": "path"
     },
@@ -1355,7 +1365,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "module",
       "id": "module"
     },
@@ -1365,7 +1375,7 @@
       "source_file": "tests/test_architecture.py",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "_imported_modules()",
       "id": "tests_test_architecture_imported_modules"
     },
@@ -1375,7 +1385,7 @@
       "source_file": "tests/test_architecture.py",
       "source_location": "L31",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "_imported_names_from()",
       "id": "tests_test_architecture_imported_names_from"
     },
@@ -1385,7 +1395,7 @@
       "source_file": "tests/test_architecture.py",
       "source_location": "L43",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "_is_property()",
       "id": "tests_test_architecture_is_property"
     },
@@ -1395,7 +1405,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "functiondef",
       "id": "functiondef"
     },
@@ -1405,7 +1415,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "asyncfunctiondef",
       "id": "asyncfunctiondef"
     },
@@ -1415,7 +1425,7 @@
       "source_file": "tests/test_architecture.py",
       "source_location": "L49",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "_is_trivial_property()",
       "id": "tests_test_architecture_is_trivial_property"
     },
@@ -1425,7 +1435,7 @@
       "source_file": "tests/test_architecture.py",
       "source_location": "L64",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "test_models_are_data_only()",
       "id": "tests_test_architecture_test_models_are_data_only"
     },
@@ -1435,7 +1445,7 @@
       "source_file": "tests/test_architecture.py",
       "source_location": "L86",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "test_models_do_not_import_upper_layers()",
       "id": "tests_test_architecture_test_models_do_not_import_upper_layers"
     },
@@ -1445,7 +1455,7 @@
       "source_file": "tests/test_architecture.py",
       "source_location": "L99",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "test_services_do_not_know_telegram()",
       "id": "tests_test_architecture_test_services_do_not_know_telegram"
     },
@@ -1455,7 +1465,7 @@
       "source_file": "tests/test_architecture.py",
       "source_location": "L113",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "test_handlers_use_repo_not_raw_sql()",
       "id": "tests_test_architecture_test_handlers_use_repo_not_raw_sql"
     },
@@ -1465,7 +1475,7 @@
       "source_file": "tests/test_architecture.py",
       "source_location": "L128",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "test_repo_is_the_only_sql_entry_point()",
       "id": "tests_test_architecture_test_repo_is_the_only_sql_entry_point"
     },
@@ -1475,7 +1485,7 @@
       "source_file": "tests/test_architecture.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "\u0430\u0440\u0445\u0456\u0442\u0435\u043a\u0442\u0443\u0440\u043d\u0456 \u0442\u0435\u0441\u0442\u0438 \u2014 \u043e\u0445\u043e\u0440\u043e\u043d\u044f\u044e\u0442\u044c \u043f\u0440\u0430\u0432\u0438\u043b\u0430 \u0437 architecture.md.  \u044f\u043a\u0449\u043e \u0442\u0435\u0441\u0442 \u0443\u043f\u0430\u0432 \u2014 \u0432\u0438\u043f",
       "id": "tests_test_architecture_rationale_1"
     },
@@ -1485,7 +1495,7 @@
       "source_file": "tests/test_architecture.py",
       "source_location": "L50",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "\u043f\u0440\u043e\u0441\u0442\u0435 read-only property: (docstring +) \u043e\u0434\u0438\u043d return, \u0431\u0435\u0437 \u043f\u0440\u0438\u0441\u0432\u043e\u0454\u043d\u044c/await.",
       "id": "tests_test_architecture_rationale_50"
     },
@@ -1495,7 +1505,7 @@
       "source_file": "tests/test_architecture.py",
       "source_location": "L65",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "\u043c\u043e\u0434\u0435\u043b\u0456 \u2014 \u043b\u0438\u0448\u0435 \u043a\u043e\u043b\u043e\u043d\u043a\u0438 \u0442\u0430 \u043f\u0440\u043e\u0441\u0442\u0456 read-only @property, \u0431\u0435\u0437 \u043c\u0435\u0442\u043e\u0434\u0456\u0432 \u0437 \u043b\u043e\u0433\u0456\u043a\u043e\u044e.",
       "id": "tests_test_architecture_rationale_65"
     },
@@ -1505,7 +1515,7 @@
       "source_file": "tests/test_architecture.py",
       "source_location": "L114",
       "_origin": "ast",
-      "community": 13,
+      "community": 15,
       "norm_label": "\u0445\u0435\u043d\u0434\u043b\u0435\u0440\u0430\u043c \u0437 sqlalchemy \u0434\u043e\u0437\u0432\u043e\u043b\u0435\u043d\u043e \u043b\u0438\u0448\u0435 \u0442\u0438\u043f asyncsession.",
       "id": "tests_test_architecture_rationale_114"
     },
@@ -1518,7 +1528,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 13,
       "norm_label": "layer rules (handlers \u2192 services \u2192 repo \u2192 models)",
       "id": "architecture_layer_rules"
     },
@@ -1531,7 +1541,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 13,
       "norm_label": "rule 1: models are data-only",
       "id": "architecture_models_data_only"
     },
@@ -1544,7 +1554,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 13,
       "norm_label": "rule 2: repo.py is the single sql point",
       "id": "architecture_repo_single_sql_point"
     },
@@ -1557,7 +1567,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 13,
       "norm_label": "rule 3: services know nothing about telegram",
       "id": "architecture_services_no_telegram"
     },
@@ -1570,7 +1580,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 13,
       "norm_label": "rule 4: thin handlers (no sql, no business rules, no prompts)",
       "id": "architecture_thin_handlers"
     },
@@ -1583,7 +1593,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 13,
       "norm_label": "rule 6: new feature = new service",
       "id": "architecture_new_feature_new_service"
     },
@@ -1596,7 +1606,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 13,
       "norm_label": "services/ingestion.py adapter (sanctioned aiogram exception)",
       "id": "architecture_ingestion_adapter"
     },
@@ -1609,7 +1619,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 13,
       "norm_label": "user model as thin identity bridge (active_group_id tenancy key)",
       "id": "architecture_user_model_bridge"
     },
@@ -1622,7 +1632,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 13,
       "norm_label": "architecture test suite (tests/test_architecture.py)",
       "id": "architecture_test_suite"
     },
@@ -1632,7 +1642,7 @@
       "source_file": "alembic/env.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": "env.py",
       "id": "alembic_env"
     },
@@ -1642,7 +1652,7 @@
       "source_file": "alembic/env.py",
       "source_location": "L24",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": "run_migrations_offline()",
       "id": "alembic_env_run_migrations_offline"
     },
@@ -1652,7 +1662,7 @@
       "source_file": "alembic/env.py",
       "source_location": "L36",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": "run_migrations_online()",
       "id": "alembic_env_run_migrations_online"
     },
@@ -1662,7 +1672,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 24,
+      "community": 23,
       "norm_label": "group",
       "id": "bot_db_repo_py_group"
     },
@@ -1672,7 +1682,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 46,
+      "community": 45,
       "norm_label": "recipe",
       "id": "recipe"
     },
@@ -1682,7 +1692,7 @@
       "source_file": "bot/db/session.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": "session.py",
       "id": "bot_db_session"
     },
@@ -1692,7 +1702,7 @@
       "source_file": "bot/db/session.py",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": "get_session_factory()",
       "id": "bot_db_session_get_session_factory"
     },
@@ -1702,7 +1712,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "recipeinput",
       "id": "recipeinput"
     },
@@ -1712,7 +1722,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "user",
       "id": "bot_handlers_add_recipe_py_user"
     },
@@ -1872,7 +1882,7 @@
       "source_file": "bot/handlers/menu.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 0,
+      "community": 14,
       "norm_label": "menu.py",
       "id": "bot_handlers_menu"
     },
@@ -1882,7 +1892,7 @@
       "source_file": "bot/handlers/menu.py",
       "source_location": "L24",
       "_origin": "ast",
-      "community": 0,
+      "community": 14,
       "norm_label": "_plan_for_active_group()",
       "id": "bot_handlers_menu_plan_for_active_group"
     },
@@ -1892,7 +1902,7 @@
       "source_file": "bot/handlers/menu.py",
       "source_location": "L32",
       "_origin": "ast",
-      "community": 0,
+      "community": 14,
       "norm_label": "menu_hint()",
       "id": "bot_handlers_menu_menu_hint"
     },
@@ -1902,7 +1912,7 @@
       "source_file": "bot/handlers/menu.py",
       "source_location": "L42",
       "_origin": "ast",
-      "community": 0,
+      "community": 14,
       "norm_label": "run_menu_flow()",
       "id": "bot_handlers_menu_run_menu_flow"
     },
@@ -1912,7 +1922,7 @@
       "source_file": "bot/handlers/menu.py",
       "source_location": "L99",
       "_origin": "ast",
-      "community": 0,
+      "community": 14,
       "norm_label": "send_shopping_list()",
       "id": "bot_handlers_menu_send_shopping_list"
     },
@@ -1922,7 +1932,7 @@
       "source_file": "bot/handlers/menu.py",
       "source_location": "L128",
       "_origin": "ast",
-      "community": 0,
+      "community": 14,
       "norm_label": "take_menu()",
       "id": "bot_handlers_menu_take_menu"
     },
@@ -1932,7 +1942,7 @@
       "source_file": "bot/handlers/menu.py",
       "source_location": "L151",
       "_origin": "ast",
-      "community": 0,
+      "community": 14,
       "norm_label": "run_replace_flow()",
       "id": "bot_handlers_menu_run_replace_flow"
     },
@@ -1952,7 +1962,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "inlinekeyboardmarkup",
       "id": "inlinekeyboardmarkup"
     },
@@ -1962,7 +1972,7 @@
       "source_file": "bot/services/llm/base.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "base.py",
       "id": "bot_services_llm_base"
     },
@@ -1972,7 +1982,7 @@
       "source_file": "bot/services/llm/base.py",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "extractedingredient",
       "id": "bot_services_llm_base_extractedingredient"
     },
@@ -1982,7 +1992,7 @@
       "source_file": "bot/services/llm/base.py",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "recipeextraction",
       "id": "bot_services_llm_base_recipeextraction"
     },
@@ -1992,7 +2002,7 @@
       "source_file": "bot/services/llm/base.py",
       "source_location": "L49",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "queryintent",
       "id": "bot_services_llm_base_queryintent"
     },
@@ -2002,7 +2012,7 @@
       "source_file": "bot/services/llm/base.py",
       "source_location": "L64",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "selectionresult",
       "id": "bot_services_llm_base_selectionresult"
     },
@@ -2012,7 +2022,7 @@
       "source_file": "bot/services/llm/base.py",
       "source_location": "L71",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "menuslot",
       "id": "bot_services_llm_base_menuslot"
     },
@@ -2022,7 +2032,7 @@
       "source_file": "bot/services/llm/base.py",
       "source_location": "L77",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "menuplanresult",
       "id": "bot_services_llm_base_menuplanresult"
     },
@@ -2032,7 +2042,7 @@
       "source_file": "bot/services/llm/base.py",
       "source_location": "L83",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "llmerror",
       "id": "bot_services_llm_base_llmerror"
     },
@@ -2042,7 +2052,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "exception",
       "id": "bot_services_llm_base_py_exception"
     },
@@ -2052,7 +2062,7 @@
       "source_file": "bot/services/llm/base.py",
       "source_location": "L87",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "llmquotaerror",
       "id": "bot_services_llm_base_llmquotaerror"
     },
@@ -2062,7 +2072,7 @@
       "source_file": "bot/services/llm/base.py",
       "source_location": "L91",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "llmclient",
       "id": "bot_services_llm_base_llmclient"
     },
@@ -2072,7 +2082,7 @@
       "source_file": "bot/services/llm/base.py",
       "source_location": "L95",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": ".extract_recipe()",
       "id": "bot_services_llm_base_llmclient_extract_recipe"
     },
@@ -2082,7 +2092,7 @@
       "source_file": "bot/services/llm/base.py",
       "source_location": "L100",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": ".route_query()",
       "id": "bot_services_llm_base_llmclient_route_query"
     },
@@ -2092,7 +2102,7 @@
       "source_file": "bot/services/llm/base.py",
       "source_location": "L103",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": ".select_recipes()",
       "id": "bot_services_llm_base_llmclient_select_recipes"
     },
@@ -2102,7 +2112,7 @@
       "source_file": "bot/services/llm/base.py",
       "source_location": "L108",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": ".plan_menu()",
       "id": "bot_services_llm_base_llmclient_plan_menu"
     },
@@ -2112,7 +2122,7 @@
       "source_file": "bot/services/llm/base.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "\u0456\u043d\u0442\u0435\u0440\u0444\u0435\u0438\u0441 llm \u0456 \u0441\u0445\u0435\u043c\u0438 structured output.  \u043a\u043b\u044e\u0447\u043e\u0432\u0438\u0438 \u043f\u0440\u0438\u043d\u0446\u0438\u043f: llm \u043d\u0456\u043a\u043e\u043b\u0438 \u043d\u0435 \u0433\u0435\u043d\u0435\u0440\u0443",
       "id": "bot_services_llm_base_rationale_1"
     },
@@ -2122,7 +2132,7 @@
       "source_file": "bot/services/llm/base.py",
       "source_location": "L88",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "\u043f\u0435\u0440\u0435\u0432\u0438\u0449\u0435\u043d\u043e \u043b\u0456\u043c\u0456\u0442 \u0437\u0430\u043f\u0438\u0442\u0456\u0432 \u043f\u0440\u043e\u0432\u0430\u0438\u0434\u0435\u0440\u0430 (http 429).",
       "id": "bot_services_llm_base_rationale_88"
     },
@@ -2132,7 +2142,7 @@
       "source_file": "bot/services/llm/base.py",
       "source_location": "L92",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "\u0430\u0431\u0441\u0442\u0440\u0430\u043a\u0446\u0456\u044f \u043d\u0430\u0434 \u043f\u0440\u043e\u0432\u0430\u0438\u0434\u0435\u0440\u043e\u043c \u2014 \u0449\u043e\u0431 \u0437\u0433\u043e\u0434\u043e\u043c \u0437\u0430\u043c\u0456\u043d\u0438\u0442\u0438 gemini \u043d\u0430 claude.",
       "id": "bot_services_llm_base_rationale_92"
     },
@@ -2142,7 +2152,7 @@
       "source_file": "bot/services/llm/gemini.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "gemini.py",
       "id": "bot_services_llm_gemini"
     },
@@ -2152,7 +2162,7 @@
       "source_file": "bot/services/llm/gemini.py",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "geminiclient",
       "id": "bot_services_llm_gemini_geminiclient"
     },
@@ -2162,7 +2172,7 @@
       "source_file": "bot/services/llm/gemini.py",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": ".__init__()",
       "id": "bot_services_llm_gemini_geminiclient_init"
     },
@@ -2172,7 +2182,7 @@
       "source_file": "bot/services/llm/gemini.py",
       "source_location": "L23",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "._generate()",
       "id": "bot_services_llm_gemini_geminiclient_generate"
     },
@@ -2182,7 +2192,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": "t",
       "id": "bot_services_llm_gemini_py_t"
     },
@@ -2192,7 +2202,7 @@
       "source_file": "bot/services/llm/gemini.py",
       "source_location": "L45",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": ".extract_recipe()",
       "id": "bot_services_llm_gemini_geminiclient_extract_recipe"
     },
@@ -2202,7 +2212,7 @@
       "source_file": "bot/services/llm/gemini.py",
       "source_location": "L55",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": ".route_query()",
       "id": "bot_services_llm_gemini_geminiclient_route_query"
     },
@@ -2212,7 +2222,7 @@
       "source_file": "bot/services/llm/gemini.py",
       "source_location": "L60",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": ".select_recipes()",
       "id": "bot_services_llm_gemini_geminiclient_select_recipes"
     },
@@ -2222,7 +2232,7 @@
       "source_file": "bot/services/llm/gemini.py",
       "source_location": "L70",
       "_origin": "ast",
-      "community": 0,
+      "community": 3,
       "norm_label": ".plan_menu()",
       "id": "bot_services_llm_gemini_geminiclient_plan_menu"
     },
@@ -2232,7 +2242,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 39,
+      "community": 38,
       "norm_label": "t",
       "id": "bot_services_llm_openrouter_py_t"
     },
@@ -2242,7 +2252,7 @@
       "source_file": "bot/services/llm/retry.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "retry.py",
       "id": "bot_services_llm_retry"
     },
@@ -2252,7 +2262,7 @@
       "source_file": "bot/services/llm/retry.py",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "retry_delay()",
       "id": "bot_services_llm_retry_retry_delay"
     },
@@ -2262,7 +2272,7 @@
       "source_file": "bot/services/llm/retry.py",
       "source_location": "L27",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "run_with_retries()",
       "id": "bot_services_llm_retry_run_with_retries"
     },
@@ -2272,7 +2282,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "t",
       "id": "bot_services_llm_retry_py_t"
     },
@@ -2282,7 +2292,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "exception",
       "id": "bot_services_llm_retry_py_exception"
     },
@@ -2292,7 +2302,7 @@
       "source_file": "bot/services/llm/retry.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "\u0441\u043f\u0456\u043b\u044c\u043d\u0456 \u0440\u0435\u0442\u0440\u0430\u0456 \u0434\u043b\u044f llm-\u043f\u0440\u043e\u0432\u0430\u0438\u0434\u0435\u0440\u0456\u0432 \u0437 \u043a\u043b\u0430\u0441\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u0454\u044e \u0437\u0430 http-\u0441\u0442\u0430\u0442\u0443\u0441\u043e\u043c.",
       "id": "bot_services_llm_retry_rationale_1"
     },
@@ -2302,7 +2312,7 @@
       "source_file": "bot/services/llm/retry.py",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "\u043f\u0430\u0443\u0437\u0430 \u043f\u0435\u0440\u0435\u0434 \u043d\u0430\u0441\u0442\u0443\u043f\u043d\u043e\u044e \u0441\u043f\u0440\u043e\u0431\u043e\u044e; none = \u043f\u043e\u043c\u0438\u043b\u043a\u0430 \u043f\u043e\u0441\u0442\u0456\u0438\u043d\u0430, \u043d\u0435 \u0440\u0435\u0442\u0440\u0430\u0456\u043c\u043e.",
       "id": "bot_services_llm_retry_rationale_19"
     },
@@ -2315,7 +2325,7 @@
       "source_location": "L1",
       "version": "0.1.0",
       "_origin": "ast",
-      "community": 44,
+      "community": 43,
       "norm_label": "tg-bot-sho-poisty",
       "id": "pkg_tg_bot_sho_poisty"
     },
@@ -2325,7 +2335,7 @@
       "source_file": "tests/test_ask_suggestions.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "test_ask_suggestions.py",
       "id": "tests_test_ask_suggestions"
     },
@@ -2335,7 +2345,7 @@
       "source_file": "tests/test_ask_suggestions.py",
       "source_location": "L6",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "test_every_suggestion_builds_a_valid_intent()",
       "id": "tests_test_ask_suggestions_test_every_suggestion_builds_a_valid_intent"
     },
@@ -2345,7 +2355,7 @@
       "source_file": "tests/test_ask_suggestions.py",
       "source_location": "L14",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "test_keyboard_callbacks_resolve_back_to_suggestions()",
       "id": "tests_test_ask_suggestions_test_keyboard_callbacks_resolve_back_to_suggestions"
     },
@@ -2355,7 +2365,7 @@
       "source_file": "tests/test_ask_suggestions.py",
       "source_location": "L7",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "\u0456\u043d\u0442\u0435\u043d\u0442\u0438 \u0437\u0430\u0434\u0430\u043d\u0456 \u0434\u0456\u043a\u0442\u0430\u043c\u0438, \u0442\u043e\u0436 \u043f\u043e\u043c\u0438\u043b\u043a\u0443 \u0432 \u043a\u043b\u044e\u0447\u0456 \u043a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u0456 \u0432\u0438\u0434\u043d\u043e \u043b\u0438\u0448\u0435 \u0442\u0443\u0442.",
       "id": "tests_test_ask_suggestions_rationale_7"
     },
@@ -2365,7 +2375,7 @@
       "source_file": "tests/test_llm_retry.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "test_llm_retry.py",
       "id": "tests_test_llm_retry"
     },
@@ -2375,7 +2385,7 @@
       "source_file": "tests/test_llm_retry.py",
       "source_location": "L10",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "fakeapierror",
       "id": "tests_test_llm_retry_fakeapierror"
     },
@@ -2385,7 +2395,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "exception",
       "id": "tests_test_llm_retry_py_exception"
     },
@@ -2395,7 +2405,7 @@
       "source_file": "tests/test_llm_retry.py",
       "source_location": "L11",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": ".__init__()",
       "id": "tests_test_llm_retry_fakeapierror_init"
     },
@@ -2405,7 +2415,7 @@
       "source_file": "tests/test_llm_retry.py",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "_status_of()",
       "id": "tests_test_llm_retry_status_of"
     },
@@ -2415,7 +2425,7 @@
       "source_file": "tests/test_llm_retry.py",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "test_config_errors_are_permanent()",
       "id": "tests_test_llm_retry_test_config_errors_are_permanent"
     },
@@ -2425,7 +2435,7 @@
       "source_file": "tests/test_llm_retry.py",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "test_quota_uses_longer_delay()",
       "id": "tests_test_llm_retry_test_quota_uses_longer_delay"
     },
@@ -2435,7 +2445,7 @@
       "source_file": "tests/test_llm_retry.py",
       "source_location": "L32",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "test_transient_errors_use_standard_delay()",
       "id": "tests_test_llm_retry_test_transient_errors_use_standard_delay"
     },
@@ -2445,7 +2455,7 @@
       "source_file": "tests/test_llm_retry.py",
       "source_location": "L37",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "_no_sleep()",
       "id": "tests_test_llm_retry_no_sleep"
     },
@@ -2455,7 +2465,7 @@
       "source_file": "tests/test_llm_retry.py",
       "source_location": "L47",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "test_permanent_error_fails_fast()",
       "id": "tests_test_llm_retry_test_permanent_error_fails_fast"
     },
@@ -2465,7 +2475,7 @@
       "source_file": "tests/test_llm_retry.py",
       "source_location": "L61",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "test_quota_exhaustion_raises_quota_error()",
       "id": "tests_test_llm_retry_test_quota_exhaustion_raises_quota_error"
     },
@@ -2475,7 +2485,7 @@
       "source_file": "tests/test_llm_retry.py",
       "source_location": "L74",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "test_transient_error_recovers()",
       "id": "tests_test_llm_retry_test_transient_error_recovers"
     },
@@ -2485,7 +2495,7 @@
       "source_file": "tests/test_llm_retry.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "\u043a\u043b\u0430\u0441\u0438\u0444\u0456\u043a\u0430\u0446\u0456\u044f \u043f\u043e\u043c\u0438\u043b\u043e\u043a llm: 429 \u2014 \u0434\u043e\u0432\u0448\u0438\u0438 \u0440\u0435\u0442\u0440\u0430\u0438, 4xx-\u043a\u043e\u043d\u0444\u0456\u0433 \u2014 \u0431\u0435\u0437 \u0440\u0435\u0442\u0440\u0430\u044e.",
       "id": "tests_test_llm_retry_rationale_1"
     },
@@ -2495,7 +2505,7 @@
       "source_file": "tests/test_llm_retry.py",
       "source_location": "L38",
       "_origin": "ast",
-      "community": 0,
+      "community": 7,
       "norm_label": "\u0440\u043e\u0431\u0438\u0442\u044c \u0440\u0435\u0442\u0440\u0430\u0456 \u043c\u0438\u0442\u0442\u0454\u0432\u0438\u043c\u0438, \u043d\u0435 \u0437\u0430\u0447\u0456\u043f\u0430\u044e\u0447\u0438 \u0441\u0430\u043c\u0456 \u043a\u043e\u043d\u0441\u0442\u0430\u043d\u0442\u0438 \u0437\u0430\u0442\u0440\u0438\u043c\u043a\u0438     (\u0442\u0435\u0441\u0442 test_quo",
       "id": "tests_test_llm_retry_rationale_38"
     },
@@ -2505,7 +2515,7 @@
       "source_file": "tests/test_openrouter.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "test_openrouter.py",
       "id": "tests_test_openrouter"
     },
@@ -2515,7 +2525,7 @@
       "source_file": "tests/test_openrouter.py",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "stubcompletions",
       "id": "tests_test_openrouter_stubcompletions"
     },
@@ -2525,7 +2535,7 @@
       "source_file": "tests/test_openrouter.py",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": ".__init__()",
       "id": "tests_test_openrouter_stubcompletions_init"
     },
@@ -2535,7 +2545,7 @@
       "source_file": "tests/test_openrouter.py",
       "source_location": "L13",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": ".create()",
       "id": "tests_test_openrouter_stubcompletions_create"
     },
@@ -2545,7 +2555,7 @@
       "source_file": "tests/test_openrouter.py",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "_client_with_stub()",
       "id": "tests_test_openrouter_client_with_stub"
     },
@@ -2555,7 +2565,7 @@
       "source_file": "tests/test_openrouter.py",
       "source_location": "L26",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "test_file_part_pdf_and_image()",
       "id": "tests_test_openrouter_test_file_part_pdf_and_image"
     },
@@ -2565,7 +2575,7 @@
       "source_file": "tests/test_openrouter.py",
       "source_location": "L35",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "test_extract_recipe_builds_multimodal_message()",
       "id": "tests_test_openrouter_test_extract_recipe_builds_multimodal_message"
     },
@@ -2575,7 +2585,7 @@
       "source_file": "tests/test_openrouter.py",
       "source_location": "L60",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "test_route_query_has_no_pdf_plugins()",
       "id": "tests_test_openrouter_test_route_query_has_no_pdf_plugins"
     },
@@ -2585,7 +2595,7 @@
       "source_file": "tests/test_openrouter.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "openrouterclient: \u0437\u0431\u0456\u0440\u043a\u0430 \u043f\u043e\u0432\u0456\u0434\u043e\u043c\u043b\u0435\u043d\u043d\u044f \u0456 \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u0456\u0432 \u0431\u0435\u0437 \u0440\u0435\u0430\u043b\u044c\u043d\u0438\u0445 \u0432\u0438\u043a\u043b\u0438\u043a\u0456\u0432 api.",
       "id": "tests_test_openrouter_rationale_1"
     },
@@ -2598,7 +2608,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "coderabbit review configuration",
       "id": "coderabbit_coderabbit_config"
     },
@@ -2611,7 +2621,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "models are data-only rule",
       "id": "coderabbit_models_data_only_rule"
     },
@@ -2624,7 +2634,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "repo is sole query construction site",
       "id": "coderabbit_repo_sole_query_site_rule"
     },
@@ -2637,7 +2647,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "thin handlers rule",
       "id": "coderabbit_thin_handlers_rule"
     },
@@ -2650,7 +2660,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "services take plain types so tenancy is explicit",
       "id": "coderabbit_services_tenancy_explicit_rule"
     },
@@ -2663,7 +2673,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "ingestion adapter aiogram exception",
       "id": "coderabbit_ingestion_adapter_exception"
     },
@@ -2676,7 +2686,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "all llm calls go through llmclient interface",
       "id": "coderabbit_llmclient_interface_rule"
     },
@@ -2689,7 +2699,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 13,
       "norm_label": "llm-authored text must be html-escaped",
       "id": "coderabbit_llm_escaping_rule"
     },
@@ -2702,7 +2712,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "code review report 2026-07-14",
       "id": "report_2026_07_14_09_01_code_review_report"
     },
@@ -2715,7 +2725,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "p1 cross-group records in serve history",
       "id": "report_2026_07_14_09_01_cross_group_serve_history"
     },
@@ -2728,7 +2738,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "p2 recipe confirmation not bound to original group",
       "id": "report_2026_07_14_09_01_fsm_group_binding"
     },
@@ -2741,7 +2751,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "p2 stale take dish buttons use latest query intent",
       "id": "report_2026_07_14_09_01_stale_callback_intent"
     },
@@ -2754,7 +2764,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "p2 data-only architecture guard permits side effects",
       "id": "report_2026_07_14_09_01_trivial_property_guard_gap"
     },
@@ -2767,7 +2777,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "p2 incomplete regression coverage",
       "id": "report_2026_07_14_09_01_regression_coverage_gap"
     },
@@ -2780,7 +2790,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "group scoping invariant",
       "id": "report_2026_07_14_09_01_group_scoping_invariant"
     },
@@ -2793,7 +2803,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "pragma foreign_keys=on for runtime connections",
       "id": "report_2026_07_14_09_01_foreign_keys_pragma"
     },
@@ -2803,7 +2813,7 @@
       "source_file": "bot/config.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": "config.py",
       "id": "bot_config"
     },
@@ -2813,7 +2823,7 @@
       "source_file": "bot/config.py",
       "source_location": "L6",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": "settings",
       "id": "bot_config_settings"
     },
@@ -2823,7 +2833,7 @@
       "source_file": "bot/config.py",
       "source_location": "L20",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": ".allow_all()",
       "id": "bot_config_settings_allow_all"
     },
@@ -2833,7 +2843,7 @@
       "source_file": "bot/config.py",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": ".allowed_ids()",
       "id": "bot_config_settings_allowed_ids"
     },
@@ -2843,7 +2853,7 @@
       "source_file": "bot/config.py",
       "source_location": "L33",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": ".db_url()",
       "id": "bot_config_settings_db_url"
     },
@@ -2853,7 +2863,7 @@
       "source_file": "bot/config.py",
       "source_location": "L37",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": ".db_url_sync()",
       "id": "bot_config_settings_db_url_sync"
     },
@@ -2863,7 +2873,7 @@
       "source_file": "bot/config.py",
       "source_location": "L42",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": "get_settings()",
       "id": "bot_config_get_settings"
     },
@@ -2873,7 +2883,7 @@
       "source_file": "bot/config.py",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": "\u0432\u0456\u0434\u043a\u0440\u0438\u0442\u0438\u0438 \u0434\u043e\u0441\u0442\u0443\u043f \u2014 \u043b\u0438\u0448\u0435 \u0437\u0430 \u044f\u0432\u043d\u0438\u043c allowed_user_ids=* (dev-\u0440\u0435\u0436\u0438\u043c).",
       "id": "bot_config_rationale_21"
     },
@@ -2883,7 +2893,7 @@
       "source_file": "bot/services/llm/openrouter.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "openrouter.py",
       "id": "bot_services_llm_openrouter"
     },
@@ -2893,7 +2903,7 @@
       "source_file": "bot/services/llm/openrouter.py",
       "source_location": "L29",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "_text_part()",
       "id": "bot_services_llm_openrouter_text_part"
     },
@@ -2903,7 +2913,7 @@
       "source_file": "bot/services/llm/openrouter.py",
       "source_location": "L33",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "_file_part()",
       "id": "bot_services_llm_openrouter_file_part"
     },
@@ -2913,7 +2923,7 @@
       "source_file": "bot/services/llm/openrouter.py",
       "source_location": "L49",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "openrouterclient",
       "id": "bot_services_llm_openrouter_openrouterclient"
     },
@@ -2923,7 +2933,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "llmclient",
       "id": "llmclient"
     },
@@ -2933,7 +2943,7 @@
       "source_file": "bot/services/llm/openrouter.py",
       "source_location": "L50",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": ".__init__()",
       "id": "bot_services_llm_openrouter_openrouterclient_init"
     },
@@ -2943,7 +2953,7 @@
       "source_file": "bot/services/llm/openrouter.py",
       "source_location": "L54",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "._generate()",
       "id": "bot_services_llm_openrouter_openrouterclient_generate"
     },
@@ -2953,7 +2963,7 @@
       "source_file": "bot/services/llm/openrouter.py",
       "source_location": "L88",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": ".extract_recipe()",
       "id": "bot_services_llm_openrouter_openrouterclient_extract_recipe"
     },
@@ -2963,7 +2973,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "recipeextraction",
       "id": "recipeextraction"
     },
@@ -2973,7 +2983,7 @@
       "source_file": "bot/services/llm/openrouter.py",
       "source_location": "L98",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": ".route_query()",
       "id": "bot_services_llm_openrouter_openrouterclient_route_query"
     },
@@ -2983,7 +2993,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 7,
+      "community": 0,
       "norm_label": "queryintent",
       "id": "queryintent"
     },
@@ -2993,7 +3003,7 @@
       "source_file": "bot/services/llm/openrouter.py",
       "source_location": "L105",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": ".select_recipes()",
       "id": "bot_services_llm_openrouter_openrouterclient_select_recipes"
     },
@@ -3003,7 +3013,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "selectionresult",
       "id": "selectionresult"
     },
@@ -3013,7 +3023,7 @@
       "source_file": "bot/services/llm/openrouter.py",
       "source_location": "L115",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": ".plan_menu()",
       "id": "bot_services_llm_openrouter_openrouterclient_plan_menu"
     },
@@ -3023,7 +3033,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "menuplanresult",
       "id": "menuplanresult"
     },
@@ -3033,7 +3043,7 @@
       "source_file": "bot/services/llm/openrouter.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 7,
+      "community": 8,
       "norm_label": "llm-\u043a\u043b\u0456\u0454\u043d\u0442 \u0447\u0435\u0440\u0435\u0437 openrouter (openai-\u0441\u0443\u043c\u0456\u0441\u043d\u0438\u0438 api).  \u0432\u0438\u043a\u043e\u0440\u0438\u0441\u0442\u043e\u0432\u0443\u0454\u0442\u044c\u0441\u044f, \u043a\u043e\u043b\u0438 \u0437\u0430\u0434\u0430\u043d",
       "id": "bot_services_llm_openrouter_rationale_1"
     },
@@ -3046,7 +3056,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 41,
+      "community": 40,
       "norm_label": "think before coding",
       "id": "claude_think_before_coding"
     },
@@ -3059,7 +3069,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "simplicity first",
       "id": "claude_simplicity_first"
     },
@@ -3072,7 +3082,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "surgical changes",
       "id": "claude_surgical_changes"
     },
@@ -3085,7 +3095,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "goal-driven execution",
       "id": "claude_goal_driven_execution"
     },
@@ -3098,7 +3108,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "definition of done",
       "id": "claude_definition_of_done"
     },
@@ -3111,7 +3121,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "layer rules (architecture.md)",
       "id": "claude_layer_rules"
     },
@@ -3124,7 +3134,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "tg-bot-sho-poisty (project)",
       "id": "claude_tg_bot_sho_poisty"
     },
@@ -3137,7 +3147,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 40,
+      "community": 39,
       "norm_label": "openrouter_model configured in .env, never in code",
       "id": "claude_openrouter_model_config"
     },
@@ -3150,7 +3160,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "knowledge graph freshness rule",
       "id": "claude_graphify_freshness"
     },
@@ -3160,7 +3170,7 @@
       "source_file": "bot/handlers/add_recipe.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "add_recipe.py",
       "id": "bot_handlers_add_recipe"
     },
@@ -3170,7 +3180,7 @@
       "source_file": "bot/handlers/add_recipe.py",
       "source_location": "L28",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "addstates",
       "id": "bot_handlers_add_recipe_addstates"
     },
@@ -3180,7 +3190,7 @@
       "source_file": "bot/handlers/add_recipe.py",
       "source_location": "L34",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "add_hint()",
       "id": "bot_handlers_add_recipe_add_hint"
     },
@@ -3190,7 +3200,7 @@
       "source_file": "bot/handlers/add_recipe.py",
       "source_location": "L45",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "start_recipe_flow()",
       "id": "bot_handlers_add_recipe_start_recipe_flow"
     },
@@ -3200,7 +3210,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "llmclient",
       "id": "bot_handlers_add_recipe_py_llmclient"
     },
@@ -3210,7 +3220,7 @@
       "source_file": "bot/handlers/add_recipe.py",
       "source_location": "L77",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "show_confirmation()",
       "id": "bot_handlers_add_recipe_show_confirmation"
     },
@@ -3220,7 +3230,7 @@
       "source_file": "bot/handlers/add_recipe.py",
       "source_location": "L114",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "handle_media()",
       "id": "bot_handlers_add_recipe_handle_media"
     },
@@ -3230,7 +3240,7 @@
       "source_file": "bot/handlers/add_recipe.py",
       "source_location": "L125",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "toggle_category()",
       "id": "bot_handlers_add_recipe_toggle_category"
     },
@@ -3240,7 +3250,7 @@
       "source_file": "bot/handlers/add_recipe.py",
       "source_location": "L143",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "set_difficulty()",
       "id": "bot_handlers_add_recipe_set_difficulty"
     },
@@ -3250,7 +3260,7 @@
       "source_file": "bot/handlers/add_recipe.py",
       "source_location": "L157",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "cancel()",
       "id": "bot_handlers_add_recipe_cancel"
     },
@@ -3260,7 +3270,7 @@
       "source_file": "bot/handlers/add_recipe.py",
       "source_location": "L166",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "amend_start()",
       "id": "bot_handlers_add_recipe_amend_start"
     },
@@ -3270,7 +3280,7 @@
       "source_file": "bot/handlers/add_recipe.py",
       "source_location": "L177",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "amend_apply()",
       "id": "bot_handlers_add_recipe_amend_apply"
     },
@@ -3280,7 +3290,7 @@
       "source_file": "bot/handlers/add_recipe.py",
       "source_location": "L223",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "save_recipe()",
       "id": "bot_handlers_add_recipe_save_recipe"
     },
@@ -3290,7 +3300,7 @@
       "source_file": "bot/handlers/add_recipe.py",
       "source_location": "L51",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "\u0441\u043f\u0456\u043b\u044c\u043d\u0438\u0438 \u0432\u0445\u0456\u0434: \u0435\u043a\u0441\u0442\u0440\u0430\u043a\u0446\u0456\u044f + \u043a\u0430\u0440\u0442\u043a\u0430 \u043f\u0456\u0434\u0442\u0432\u0435\u0440\u0434\u0436\u0435\u043d\u043d\u044f.",
       "id": "bot_handlers_add_recipe_rationale_51"
     },
@@ -3300,7 +3310,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 33,
+      "community": 32,
       "norm_label": "statesgroup",
       "id": "bot_handlers_query_py_statesgroup"
     },
@@ -3310,7 +3320,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "state",
       "id": "state"
     },
@@ -3320,7 +3330,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": "test_edit_flow.py",
       "id": "tests_test_edit_flow"
     },
@@ -3330,7 +3340,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L25",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": "_msg",
       "id": "tests_test_edit_flow_msg"
     },
@@ -3340,7 +3350,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": "message",
       "id": "tests_test_edit_flow_py_message"
     },
@@ -3350,7 +3360,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L28",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": ".answer()",
       "id": "tests_test_edit_flow_msg_answer"
     },
@@ -3360,7 +3370,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L31",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": ".edit_reply_markup()",
       "id": "tests_test_edit_flow_msg_edit_reply_markup"
     },
@@ -3370,7 +3380,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L41",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": "_nooptyping",
       "id": "tests_test_edit_flow_nooptyping"
     },
@@ -3380,7 +3390,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L45",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": ".typing()",
       "id": "tests_test_edit_flow_nooptyping_typing"
     },
@@ -3390,7 +3400,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L48",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": ".__aenter__()",
       "id": "tests_test_edit_flow_nooptyping_aenter"
     },
@@ -3400,7 +3410,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L51",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": ".__aexit__()",
       "id": "tests_test_edit_flow_nooptyping_aexit"
     },
@@ -3410,7 +3420,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L55",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": "_llm",
       "id": "tests_test_edit_flow_llm"
     },
@@ -3420,7 +3430,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L56",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": ".__init__()",
       "id": "tests_test_edit_flow_llm_init"
     },
@@ -3430,7 +3440,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L60",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": ".extract_recipe()",
       "id": "tests_test_edit_flow_llm_extract_recipe"
     },
@@ -3440,7 +3450,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L65",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": "_query",
       "id": "tests_test_edit_flow_query"
     },
@@ -3450,7 +3460,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L66",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": ".__init__()",
       "id": "tests_test_edit_flow_query_init"
     },
@@ -3460,7 +3470,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L70",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": ".answer()",
       "id": "tests_test_edit_flow_query_answer"
     },
@@ -3470,7 +3480,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L75",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": "_extraction()",
       "id": "tests_test_edit_flow_extraction"
     },
@@ -3480,7 +3490,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L86",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": "env()",
       "id": "tests_test_edit_flow_env"
     },
@@ -3490,7 +3500,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L113",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": "test_save_with_edit_id_updates_in_place()",
       "id": "tests_test_edit_flow_test_save_with_edit_id_updates_in_place"
     },
@@ -3500,7 +3510,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L128",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": "test_save_without_edit_id_adds_new()",
       "id": "tests_test_edit_flow_test_save_without_edit_id_adds_new"
     },
@@ -3510,7 +3520,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L141",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": "test_apply_edit_carries_edit_id_into_the_card()",
       "id": "tests_test_edit_flow_test_apply_edit_carries_edit_id_into_the_card"
     },
@@ -3520,7 +3530,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L162",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": "test_edit_id_does_not_leak_into_next_add()",
       "id": "tests_test_edit_flow_test_edit_id_does_not_leak_into_next_add"
     },
@@ -3530,7 +3540,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": "\u0437\u0432\u02bc\u044f\u0437\u043a\u0430 \u00ab\u0440\u0435\u0434\u0430\u0433\u0443\u0432\u0430\u043d\u043d\u044f \u2192 \u043a\u0430\u0440\u0442\u043a\u0430 \u2192 \u0437\u0431\u0435\u0440\u0435\u0433\u0442\u0438\u00bb.  \u0446\u0456 \u0456\u043d\u0432\u0430\u0440\u0456\u0430\u043d\u0442\u0438 \u0436\u0438\u0432\u0443\u0442\u044c \u0443 \u043f\u0435\u0440\u0435\u0434\u0430\u0447\u0456 edit",
       "id": "tests_test_edit_flow_rationale_1"
     },
@@ -3540,7 +3550,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L26",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": "\u0445\u0435\u043d\u0434\u043b\u0435\u0440\u0438 \u0440\u043e\u0431\u043b\u044f\u0442\u044c isinstance(..., message), \u0442\u043e\u0436 \u043f\u043e\u0442\u0440\u0456\u0431\u0435\u043d \u0441\u0430\u043c\u0435 \u043f\u0456\u0434\u043a\u043b\u0430\u0441.",
       "id": "tests_test_edit_flow_rationale_26"
     },
@@ -3550,7 +3560,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L42",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": "chatactionsender \u0432\u0438\u043c\u0430\u0433\u0430\u0454 \u0441\u043f\u0440\u0430\u0432\u0436\u043d\u044c\u043e\u0433\u043e bot \u0456 \u0437\u0430\u0432\u0438\u0441\u0430\u0454 \u043d\u0430 \u0438\u043e\u0433\u043e \u0432\u0456\u0434\u0441\u0443\u0442\u043d\u043e\u0441\u0442\u0456.",
       "id": "tests_test_edit_flow_rationale_42"
     },
@@ -3560,7 +3570,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L142",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": "\u0441\u0430\u043c\u0435 \u0442\u0443\u0442 \u0445\u043e\u0432\u0430\u0432\u0441\u044f \u0431\u0430\u0433: \u043a\u0430\u0440\u0442\u043a\u0430 \u0433\u0443\u0431\u0438\u043b\u0430 edit_id \u0456 \u00ab\u0437\u0431\u0435\u0440\u0435\u0433\u0442\u0438\u00bb \u0440\u043e\u0431\u0438\u043b\u043e \u043a\u043e\u043f\u0456\u044e.",
       "id": "tests_test_edit_flow_rationale_142"
     },
@@ -3570,7 +3580,7 @@
       "source_file": "tests/test_edit_flow.py",
       "source_location": "L163",
       "_origin": "ast",
-      "community": 8,
+      "community": 9,
       "norm_label": "\u043f\u043e\u043a\u0438\u043d\u0443\u0442\u0435 \u0440\u0435\u0434\u0430\u0433\u0443\u0432\u0430\u043d\u043d\u044f \u043d\u0435 \u043c\u0430\u0454 \u043f\u0435\u0440\u0435\u0442\u0432\u043e\u0440\u0438\u0442\u0438 \u043d\u0430\u0441\u0442\u0443\u043f\u043d\u0435 \u0434\u043e\u0434\u0430\u0432\u0430\u043d\u043d\u044f \u043d\u0430 \u043f\u0435\u0440\u0435\u0437\u0430\u043f\u0438\u0441.",
       "id": "tests_test_edit_flow_rationale_163"
     },
@@ -3580,7 +3590,7 @@
       "source_file": "tests/test_list_numbers.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "test_list_numbers.py",
       "id": "tests_test_list_numbers"
     },
@@ -3590,7 +3600,7 @@
       "source_file": "tests/test_list_numbers.py",
       "source_location": "L23",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "test_pick_by_number()",
       "id": "tests_test_list_numbers_test_pick_by_number"
     },
@@ -3600,7 +3610,7 @@
       "source_file": "tests/test_list_numbers.py",
       "source_location": "L27",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "test_pick_by_number_on_empty_list()",
       "id": "tests_test_list_numbers_test_pick_by_number_on_empty_list"
     },
@@ -3910,7 +3920,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "query.py",
       "id": "bot_handlers_query"
     },
@@ -3920,7 +3930,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L49",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "liststates",
       "id": "bot_handlers_query_liststates"
     },
@@ -3930,7 +3940,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "statesgroup",
       "id": "statesgroup"
     },
@@ -3940,7 +3950,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L55",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "_pick_by_number()",
       "id": "bot_handlers_query_pick_by_number"
     },
@@ -3950,7 +3960,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L78",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "ask_hint()",
       "id": "bot_handlers_query_ask_hint"
     },
@@ -3960,7 +3970,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L86",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "ask_suggestion()",
       "id": "bot_handlers_query_ask_suggestion"
     },
@@ -3970,7 +3980,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "callbackquery",
       "id": "callbackquery"
     },
@@ -3980,7 +3990,7 @@
       "source_file": "",
       "source_location": "",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "fsmcontext",
       "id": "fsmcontext"
     },
@@ -3990,7 +4000,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L114",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "recent_hint()",
       "id": "bot_handlers_query_recent_hint"
     },
@@ -4000,7 +4010,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L119",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "recent_list()",
       "id": "bot_handlers_query_recent_list"
     },
@@ -4010,7 +4020,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L163",
       "_origin": "ast",
-      "community": 7,
+      "community": 0,
       "norm_label": "_meal_type()",
       "id": "bot_handlers_query_meal_type"
     },
@@ -4020,7 +4030,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L170",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "show_dish()",
       "id": "bot_handlers_query_show_dish"
     },
@@ -4030,7 +4040,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L181",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "run_find_dish()",
       "id": "bot_handlers_query_run_find_dish"
     },
@@ -4040,7 +4050,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L226",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "take_dish()",
       "id": "bot_handlers_query_take_dish"
     },
@@ -4050,7 +4060,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L254",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "another_dish()",
       "id": "bot_handlers_query_another_dish"
     },
@@ -4060,7 +4070,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L289",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "choose_dish()",
       "id": "bot_handlers_query_choose_dish"
     },
@@ -4070,7 +4080,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L309",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "_ask_number()",
       "id": "bot_handlers_query_ask_number"
     },
@@ -4080,7 +4090,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L324",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "ask_delete_number()",
       "id": "bot_handlers_query_ask_delete_number"
     },
@@ -4090,7 +4100,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L334",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "ask_edit_number()",
       "id": "bot_handlers_query_ask_edit_number"
     },
@@ -4100,7 +4110,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L344",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "cancel_number()",
       "id": "bot_handlers_query_cancel_number"
     },
@@ -4110,7 +4120,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L351",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "_resolve_number()",
       "id": "bot_handlers_query_resolve_number"
     },
@@ -4120,7 +4130,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L377",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "delete_by_number()",
       "id": "bot_handlers_query_delete_by_number"
     },
@@ -4130,7 +4140,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L391",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "show_for_edit()",
       "id": "bot_handlers_query_show_for_edit"
     },
@@ -4140,7 +4150,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L409",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "apply_edit()",
       "id": "bot_handlers_query_apply_edit"
     },
@@ -4150,7 +4160,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L467",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "confirm_delete()",
       "id": "bot_handlers_query_confirm_delete"
     },
@@ -4160,7 +4170,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L488",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "cancel_delete()",
       "id": "bot_handlers_query_cancel_delete"
     },
@@ -4170,7 +4180,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L495",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "free_text()",
       "id": "bot_handlers_query_free_text"
     },
@@ -4180,7 +4190,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L56",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "\u043d\u043e\u043c\u0435\u0440 \u0437\u0456 \u0441\u043f\u0438\u0441\u043a\u0443 \u2192 recipe_id. none, \u044f\u043a\u0449\u043e \u0446\u0435 \u043d\u0435 \u043d\u043e\u043c\u0435\u0440 \u0430\u0431\u043e \u0432\u0456\u043d \u043f\u043e\u0437\u0430 \u0441\u043f\u0438\u0441\u043a\u043e\u043c.",
       "id": "bot_handlers_query_rationale_56"
     },
@@ -4190,7 +4200,7 @@
       "source_file": "bot/handlers/query.py",
       "source_location": "L354",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "\u0441\u043f\u0456\u043b\u044c\u043d\u0435 \u0434\u043b\u044f \u0432\u0438\u0434\u0430\u043b\u0435\u043d\u043d\u044f \u0438 \u0440\u0435\u0434\u0430\u0433\u0443\u0432\u0430\u043d\u043d\u044f: \u043d\u043e\u043c\u0435\u0440 \u2192 \u0440\u0435\u0446\u0435\u043f\u0442, \u0430\u0431\u043e none + \u043f\u0456\u0434\u043a\u0430\u0437\u043a\u0430.",
       "id": "bot_handlers_query_rationale_354"
     },
@@ -4240,7 +4250,7 @@
       "source_file": "bot/keyboards/common.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "common.py",
       "id": "bot_keyboards_common"
     },
@@ -4260,7 +4270,7 @@
       "source_file": "bot/keyboards/common.py",
       "source_location": "L33",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "confirmcb",
       "id": "bot_keyboards_common_confirmcb"
     },
@@ -4270,7 +4280,7 @@
       "source_file": "bot/keyboards/common.py",
       "source_location": "L38",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "dishcb",
       "id": "bot_keyboards_common_dishcb"
     },
@@ -4280,7 +4290,7 @@
       "source_file": "bot/keyboards/common.py",
       "source_location": "L43",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "askcb",
       "id": "bot_keyboards_common_askcb"
     },
@@ -4290,7 +4300,7 @@
       "source_file": "bot/keyboards/common.py",
       "source_location": "L47",
       "_origin": "ast",
-      "community": 0,
+      "community": 14,
       "norm_label": "menucb",
       "id": "bot_keyboards_common_menucb"
     },
@@ -4310,7 +4320,7 @@
       "source_file": "bot/keyboards/common.py",
       "source_location": "L56",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "recentcb",
       "id": "bot_keyboards_common_recentcb"
     },
@@ -4320,7 +4330,7 @@
       "source_file": "bot/keyboards/common.py",
       "source_location": "L60",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "listactioncb",
       "id": "bot_keyboards_common_listactioncb"
     },
@@ -4350,7 +4360,7 @@
       "source_file": "bot/keyboards/common.py",
       "source_location": "L91",
       "_origin": "ast",
-      "community": 6,
+      "community": 10,
       "norm_label": "confirm_keyboard()",
       "id": "bot_keyboards_common_confirm_keyboard"
     },
@@ -4360,7 +4370,7 @@
       "source_file": "bot/keyboards/common.py",
       "source_location": "L117",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "dish_keyboard()",
       "id": "bot_keyboards_common_dish_keyboard"
     },
@@ -4370,7 +4380,7 @@
       "source_file": "bot/keyboards/common.py",
       "source_location": "L132",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "options_keyboard()",
       "id": "bot_keyboards_common_options_keyboard"
     },
@@ -4380,7 +4390,7 @@
       "source_file": "bot/keyboards/common.py",
       "source_location": "L142",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "ask_keyboard()",
       "id": "bot_keyboards_common_ask_keyboard"
     },
@@ -4390,7 +4400,7 @@
       "source_file": "bot/keyboards/common.py",
       "source_location": "L151",
       "_origin": "ast",
-      "community": 0,
+      "community": 14,
       "norm_label": "menu_keyboard()",
       "id": "bot_keyboards_common_menu_keyboard"
     },
@@ -4400,7 +4410,7 @@
       "source_file": "bot/keyboards/common.py",
       "source_location": "L166",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "list_actions_keyboard()",
       "id": "bot_keyboards_common_list_actions_keyboard"
     },
@@ -4410,7 +4420,7 @@
       "source_file": "bot/keyboards/common.py",
       "source_location": "L183",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "cancel_number_keyboard()",
       "id": "bot_keyboards_common_cancel_number_keyboard"
     },
@@ -4420,7 +4430,7 @@
       "source_file": "bot/keyboards/common.py",
       "source_location": "L197",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "delete_confirm_keyboard()",
       "id": "bot_keyboards_common_delete_confirm_keyboard"
     },
@@ -4430,7 +4440,7 @@
       "source_file": "bot/keyboards/common.py",
       "source_location": "L213",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "served_actions_keyboard()",
       "id": "bot_keyboards_common_served_actions_keyboard"
     },
@@ -4440,7 +4450,7 @@
       "source_file": "bot/keyboards/common.py",
       "source_location": "L227",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "clear_served_confirm_keyboard()",
       "id": "bot_keyboards_common_clear_served_confirm_keyboard"
     },
@@ -4450,7 +4460,7 @@
       "source_file": "bot/keyboards/common.py",
       "source_location": "L245",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "recent_keyboard()",
       "id": "bot_keyboards_common_recent_keyboard"
     },
@@ -4460,7 +4470,7 @@
       "source_file": "bot/keyboards/common.py",
       "source_location": "L143",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "\u0433\u043e\u0442\u043e\u0432\u0456 \u043f\u0456\u0434\u043a\u0430\u0437\u043a\u0438 \u043f\u0456\u0434 \u00ab\u0449\u043e \u043f\u0440\u0438\u0433\u043e\u0442\u0443\u0432\u0430\u0442\u0438?\u00bb: (key, \u043d\u0430\u043f\u0438\u0441).",
       "id": "bot_keyboards_common_rationale_143"
     },
@@ -4470,7 +4480,7 @@
       "source_file": "bot/keyboards/common.py",
       "source_location": "L167",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "\u0434\u0456\u0456 \u043f\u0456\u0434 \u043f\u043e\u0432\u043d\u0438\u043c \u0441\u043f\u0438\u0441\u043a\u043e\u043c \u0440\u0435\u0446\u0435\u043f\u0442\u0456\u0432 \u2014 \u0434\u0430\u043b\u0456 \u0431\u043e\u0442 \u043f\u0438\u0442\u0430\u0454 \u043d\u043e\u043c\u0435\u0440.",
       "id": "bot_keyboards_common_rationale_167"
     },
@@ -4480,7 +4490,7 @@
       "source_file": "bot/keyboards/common.py",
       "source_location": "L184",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "\u0432\u0438\u0445\u0456\u0434 \u0456\u0437 \u043e\u0447\u0456\u043a\u0443\u0432\u0430\u043d\u043d\u044f \u043d\u043e\u043c\u0435\u0440\u0430 \u2014 \u0456\u043d\u0430\u043a\u0448\u0435 \u0441\u0442\u0430\u043d \u0432\u0438\u0441\u0438\u0442\u044c \u0434\u043e \u043d\u0430\u0441\u0442\u0443\u043f\u043d\u043e\u0433\u043e \u0442\u0435\u043a\u0441\u0442\u0443.",
       "id": "bot_keyboards_common_rationale_184"
     },
@@ -4490,59 +4500,9 @@
       "source_file": "bot/keyboards/common.py",
       "source_location": "L214",
       "_origin": "ast",
-      "community": 1,
+      "community": 0,
       "norm_label": "\u0434\u0456\u044f \u043f\u0456\u0434 \u0441\u043f\u0438\u0441\u043a\u043e\u043c \u0440\u0435\u043a\u043e\u043c\u0435\u043d\u0434\u043e\u0432\u0430\u043d\u0438\u0445.",
       "id": "bot_keyboards_common_rationale_214"
-    },
-    {
-      "label": "main.py",
-      "file_type": "code",
-      "source_file": "bot/main.py",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 3,
-      "norm_label": "main.py",
-      "id": "bot_main"
-    },
-    {
-      "label": "heartbeat_loop()",
-      "file_type": "code",
-      "source_file": "bot/main.py",
-      "source_location": "L26",
-      "_origin": "ast",
-      "community": 3,
-      "norm_label": "heartbeat_loop()",
-      "id": "bot_main_heartbeat_loop"
-    },
-    {
-      "label": "run_migrations()",
-      "file_type": "code",
-      "source_file": "bot/main.py",
-      "source_location": "L36",
-      "_origin": "ast",
-      "community": 3,
-      "norm_label": "run_migrations()",
-      "id": "bot_main_run_migrations"
-    },
-    {
-      "label": "main()",
-      "file_type": "code",
-      "source_file": "bot/main.py",
-      "source_location": "L45",
-      "_origin": "ast",
-      "community": 3,
-      "norm_label": "main()",
-      "id": "bot_main_main"
-    },
-    {
-      "label": "\u041f\u0438\u0448\u0435 unix-\u0447\u0430\u0441 \u0443 \u0444\u0430\u0439\u043b; \u044f\u043a\u0449\u043e event loop \u0437\u0430\u0432\u0438\u0441 \u2014 \u0444\u0430\u0439\u043b \u0441\u0442\u0430\u0454 \u0437\u0430\u0441\u0442\u0430\u0440\u0456\u043b\u0438\u043c.      \u0421\u0432\u0456\u0436\u0456\u0441\u0442",
-      "file_type": "rationale",
-      "source_file": "bot/main.py",
-      "source_location": "L27",
-      "_origin": "ast",
-      "community": 3,
-      "norm_label": "\u043f\u0438\u0448\u0435 unix-\u0447\u0430\u0441 \u0443 \u0444\u0430\u0438\u043b; \u044f\u043a\u0449\u043e event loop \u0437\u0430\u0432\u0438\u0441 \u2014 \u0444\u0430\u0438\u043b \u0441\u0442\u0430\u0454 \u0437\u0430\u0441\u0442\u0430\u0440\u0456\u043b\u0438\u043c.      \u0441\u0432\u0456\u0436\u0456\u0441\u0442",
-      "id": "bot_main_rationale_27"
     },
     {
       "label": "rendering.py",
@@ -4684,7 +4644,7 @@
         "kind": "file"
       },
       "_origin": "ast",
-      "community": 20,
+      "community": 21,
       "norm_label": "deploy.sh",
       "id": "scripts_deploy"
     },
@@ -4698,7 +4658,7 @@
         "kind": "bash_entrypoint"
       },
       "_origin": "ast",
-      "community": 20,
+      "community": 21,
       "norm_label": "deploy.sh script",
       "id": "scripts_deploy_sh__entry"
     },
@@ -4712,7 +4672,7 @@
         "kind": "file"
       },
       "_origin": "ast",
-      "community": 16,
+      "community": 1,
       "norm_label": "ntfy-docker-watch.sh",
       "id": "scripts_ntfy_docker_watch"
     },
@@ -4726,7 +4686,7 @@
         "kind": "bash_entrypoint"
       },
       "_origin": "ast",
-      "community": 16,
+      "community": 1,
       "norm_label": "ntfy-docker-watch.sh script",
       "id": "scripts_ntfy_docker_watch_sh__entry"
     },
@@ -4740,7 +4700,7 @@
         "kind": "bash_function"
       },
       "_origin": "ast",
-      "community": 16,
+      "community": 1,
       "norm_label": "notify()",
       "id": "scripts_ntfy_docker_watch_notify"
     },
@@ -4754,7 +4714,7 @@
         "kind": "bash_function"
       },
       "_origin": "ast",
-      "community": 16,
+      "community": 1,
       "norm_label": "wait_ready()",
       "id": "scripts_ntfy_docker_watch_wait_ready"
     },
@@ -4768,7 +4728,7 @@
         "kind": "file"
       },
       "_origin": "ast",
-      "community": 21,
+      "community": 1,
       "norm_label": "ntfy-send.sh",
       "id": "scripts_ntfy_send"
     },
@@ -4782,7 +4742,7 @@
         "kind": "bash_entrypoint"
       },
       "_origin": "ast",
-      "community": 21,
+      "community": 1,
       "norm_label": "ntfy-send.sh script",
       "id": "scripts_ntfy_send_sh__entry"
     },
@@ -4796,7 +4756,7 @@
         "kind": "file"
       },
       "_origin": "ast",
-      "community": 22,
+      "community": 1,
       "norm_label": "server-maint.sh",
       "id": "scripts_server_maint"
     },
@@ -4810,7 +4770,7 @@
         "kind": "bash_entrypoint"
       },
       "_origin": "ast",
-      "community": 22,
+      "community": 1,
       "norm_label": "server-maint.sh script",
       "id": "scripts_server_maint_sh__entry"
     },
@@ -4820,7 +4780,7 @@
       "source_file": "tests/test_heartbeat.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 3,
+      "community": 1,
       "norm_label": "test_heartbeat.py",
       "id": "tests_test_heartbeat"
     },
@@ -4830,7 +4790,7 @@
       "source_file": "tests/test_heartbeat.py",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 3,
+      "community": 1,
       "norm_label": "test_heartbeat_writes_fresh_timestamp()",
       "id": "tests_test_heartbeat_test_heartbeat_writes_fresh_timestamp"
     },
@@ -4840,7 +4800,7 @@
       "source_file": "tests/test_heartbeat.py",
       "source_location": "L17",
       "_origin": "ast",
-      "community": 3,
+      "community": 1,
       "norm_label": "test_heartbeat_rewrites_on_each_tick()",
       "id": "tests_test_heartbeat_test_heartbeat_rewrites_on_each_tick"
     },
@@ -4850,7 +4810,7 @@
       "source_file": "tests/test_heartbeat.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 3,
+      "community": 1,
       "norm_label": "heartbeat_loop: \u0441\u0432\u0456\u0436\u0438\u0438 unix-\u0447\u0430\u0441 \u0443 \u0444\u0430\u0438\u043b\u0456 \u2014 \u0441\u0438\u0433\u043d\u0430\u043b, \u0449\u043e event loop \u0436\u0438\u0432\u0438\u0438.",
       "id": "tests_test_heartbeat_rationale_1"
     },
@@ -5020,7 +4980,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "test_repo.py",
       "id": "tests_test_repo"
     },
@@ -5030,7 +4990,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L11",
       "_origin": "ast",
-      "community": 3,
+      "community": 6,
       "norm_label": "session()",
       "id": "tests_test_repo_session"
     },
@@ -5040,7 +5000,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "_make_user_with_recipe()",
       "id": "tests_test_repo_make_user_with_recipe"
     },
@@ -5050,7 +5010,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L39",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "test_ensure_user_creates_personal_group()",
       "id": "tests_test_repo_test_ensure_user_creates_personal_group"
     },
@@ -5060,7 +5020,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L47",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "test_groups_are_isolated()",
       "id": "tests_test_repo_test_groups_are_isolated"
     },
@@ -5070,7 +5030,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L56",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "test_get_recipe_enforces_group_isolation()",
       "id": "tests_test_repo_test_get_recipe_enforces_group_isolation"
     },
@@ -5080,7 +5040,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L64",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "test_delete_recipe_removes_serve_history()",
       "id": "tests_test_repo_test_delete_recipe_removes_serve_history"
     },
@@ -5090,7 +5050,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L80",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "test_update_recipe_replaces_fields_and_categories()",
       "id": "tests_test_repo_test_update_recipe_replaces_fields_and_categories"
     },
@@ -5100,7 +5060,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L102",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "test_update_recipe_keeps_origin_and_serve_history()",
       "id": "tests_test_repo_test_update_recipe_keeps_origin_and_serve_history"
     },
@@ -5110,7 +5070,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L131",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "test_update_recipe_enforces_group_isolation()",
       "id": "tests_test_repo_test_update_recipe_enforces_group_isolation"
     },
@@ -5120,7 +5080,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L152",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "test_delete_recipe_enforces_group_isolation()",
       "id": "tests_test_repo_test_delete_recipe_enforces_group_isolation"
     },
@@ -5130,7 +5090,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L161",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "test_join_group_by_token_shares_base()",
       "id": "tests_test_repo_test_join_group_by_token_shares_base"
     },
@@ -5140,7 +5100,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L171",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "test_create_group_then_invite_shares_recipes()",
       "id": "tests_test_repo_test_create_group_then_invite_shares_recipes"
     },
@@ -5150,7 +5110,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L189",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "test_move_recipes_transfers_serve_history()",
       "id": "tests_test_repo_test_move_recipes_transfers_serve_history"
     },
@@ -5160,7 +5120,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L206",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "test_move_recipes_skips_duplicates_by_title()",
       "id": "tests_test_repo_test_move_recipes_skips_duplicates_by_title"
     },
@@ -5170,7 +5130,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L230",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "test_find_recipe_by_title_normalizes_and_isolates()",
       "id": "tests_test_repo_test_find_recipe_by_title_normalizes_and_isolates"
     },
@@ -5180,7 +5140,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L241",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "test_no_repeat_rule_window()",
       "id": "tests_test_repo_test_no_repeat_rule_window"
     },
@@ -5190,7 +5150,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L257",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "test_category_filter()",
       "id": "tests_test_repo_test_category_filter"
     },
@@ -5200,7 +5160,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L278",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "test_clear_served_wipes_history_for_group_only()",
       "id": "tests_test_repo_test_clear_served_wipes_history_for_group_only"
     },
@@ -5210,7 +5170,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L57",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "recipe_id \u0437 callback-data \u043d\u0435 \u043c\u0430\u0454 \u0432\u0456\u0434\u043a\u0440\u0438\u0432\u0430\u0442\u0438 \u0440\u0435\u0446\u0435\u043f\u0442\u0438 \u0447\u0443\u0436\u043e\u0456 \u0433\u0440\u0443\u043f\u0438.",
       "id": "tests_test_repo_rationale_57"
     },
@@ -5220,7 +5180,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L65",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "servehistory \u043c\u0430\u0454 fk \u043d\u0430 recipes.id \u0431\u0435\u0437 cascade \u2014 \u0456\u0441\u0442\u043e\u0440\u0456\u044e \u0442\u0440\u0435\u0431\u0430 \u043f\u0440\u0438\u0431\u0440\u0430\u0442\u0438 \u044f\u0432\u043d\u043e.",
       "id": "tests_test_repo_rationale_65"
     },
@@ -5230,7 +5190,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L103",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "\u043f\u0440\u0430\u0432\u043a\u0430 \u043c\u0456\u043d\u044f\u0454 \u0442\u0435\u043a\u0441\u0442 \u0440\u0435\u0446\u0435\u043f\u0442\u0430, \u0430 \u043d\u0435 \u0438\u043e\u0433\u043e \u043f\u043e\u0445\u043e\u0434\u0436\u0435\u043d\u043d\u044f \u0447\u0438 \u0456\u0441\u0442\u043e\u0440\u0456\u044e \u043f\u043e\u0434\u0430\u0447.",
       "id": "tests_test_repo_rationale_103"
     },
@@ -5240,7 +5200,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L172",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "\u0441\u0446\u0435\u043d\u0430\u0440\u0456\u0438 \u0431\u0430\u0433\u0430: \u0441\u0442\u0432\u043e\u0440\u0438\u0432 \u043d\u043e\u0432\u0443 \u0433\u0440\u0443\u043f\u0443 \u2192 \u043f\u0435\u0440\u0435\u043d\u0456\u0441 \u0440\u0435\u0446\u0435\u043f\u0442\u0438 \u2192 \u0437\u0430\u043f\u0440\u043e\u0448\u0435\u043d\u0438\u0438 \u0456\u0445 \u0431\u0430\u0447\u0438\u0442\u044c.",
       "id": "tests_test_repo_rationale_172"
     },
@@ -5250,7 +5210,7 @@
       "source_file": "tests/test_repo.py",
       "source_location": "L207",
       "_origin": "ast",
-      "community": 10,
+      "community": 11,
       "norm_label": "\u0434\u0443\u0431\u043b\u0456\u043a\u0430\u0442 \u0437\u0430 \u043d\u0430\u0437\u0432\u043e\u044e (\u0456\u043d\u0448\u0438\u0438 \u0440\u0435\u0433\u0456\u0441\u0442\u0440/\u043f\u0440\u043e\u0431\u0456\u043b\u0438) \u043b\u0438\u0448\u0430\u0454\u0442\u044c\u0441\u044f \u0443 \u0441\u0442\u0430\u0440\u0456\u0438 \u0433\u0440\u0443\u043f\u0456.",
       "id": "tests_test_repo_rationale_207"
     },
@@ -5263,7 +5223,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 13,
       "norm_label": "test & deploy github actions workflow",
       "id": "_github_workflows_deploy_test_and_deploy_workflow"
     },
@@ -5276,7 +5236,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 13,
       "norm_label": "ci test job (uv sync + pytest)",
       "id": "_github_workflows_deploy_test_job"
     },
@@ -5289,7 +5249,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 13,
       "norm_label": "ssh deploy job",
       "id": "_github_workflows_deploy_deploy_job"
     },
@@ -5302,7 +5262,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 13,
       "norm_label": "deploy concurrency gate",
       "id": "_github_workflows_deploy_concurrency_gate"
     },
@@ -5315,7 +5275,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 13,
       "norm_label": "sho poisty telegram recipe bot (readme)",
       "id": "readme_sho_poisty_bot"
     },
@@ -5328,7 +5288,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 13,
       "norm_label": "zero-hallucination principle",
       "id": "readme_zero_hallucination_principle"
     },
@@ -5341,7 +5301,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 13,
       "norm_label": "llm provider fallback (openrouter primary, gemini fallback)",
       "id": "readme_llm_provider_fallback"
     },
@@ -5354,7 +5314,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 13,
       "norm_label": "whitelist fail-closed access control",
       "id": "readme_whitelist_fail_closed"
     },
@@ -5367,7 +5327,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 9,
+      "community": 13,
       "norm_label": "group shared recipe base via invite link",
       "id": "readme_group_shared_recipe_base"
     },
@@ -5380,7 +5340,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 12,
+      "community": 1,
       "norm_label": "docker-compose bot service",
       "id": "docker_compose_bot_service"
     },
@@ -5393,7 +5353,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 12,
+      "community": 1,
       "norm_label": "stop_grace_period 30s for aiogram shutdown",
       "id": "docker_compose_stop_grace_period"
     },
@@ -5406,7 +5366,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 12,
+      "community": 1,
       "norm_label": "json-file log rotation limits",
       "id": "docker_compose_log_rotation"
     },
@@ -5420,9 +5380,9 @@
         "kind": "file"
       },
       "_origin": "ast",
-      "id": "scripts_check_heartbeat",
-      "community": 19,
-      "norm_label": "check-heartbeat.sh"
+      "community": 20,
+      "norm_label": "check-heartbeat.sh",
+      "id": "scripts_check_heartbeat"
     },
     {
       "label": "check-heartbeat.sh script",
@@ -5434,12 +5394,62 @@
         "kind": "bash_entrypoint"
       },
       "_origin": "ast",
-      "id": "scripts_check_heartbeat_sh__entry",
-      "community": 19,
-      "norm_label": "check-heartbeat.sh script"
+      "community": 20,
+      "norm_label": "check-heartbeat.sh script",
+      "id": "scripts_check_heartbeat_sh__entry"
     },
     {
-      "label": "Monitoring (watchers) installation guide",
+      "label": "main.py",
+      "file_type": "code",
+      "source_file": "bot/main.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "bot_main",
+      "community": 1,
+      "norm_label": "main.py"
+    },
+    {
+      "label": "heartbeat_loop()",
+      "file_type": "code",
+      "source_file": "bot/main.py",
+      "source_location": "L26",
+      "_origin": "ast",
+      "id": "bot_main_heartbeat_loop",
+      "community": 1,
+      "norm_label": "heartbeat_loop()"
+    },
+    {
+      "label": "run_migrations()",
+      "file_type": "code",
+      "source_file": "bot/main.py",
+      "source_location": "L36",
+      "_origin": "ast",
+      "id": "bot_main_run_migrations",
+      "community": 1,
+      "norm_label": "run_migrations()"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "bot/main.py",
+      "source_location": "L45",
+      "_origin": "ast",
+      "id": "bot_main_main",
+      "community": 1,
+      "norm_label": "main()"
+    },
+    {
+      "label": "\u041f\u0438\u0448\u0435 unix-\u0447\u0430\u0441 \u0443 \u0444\u0430\u0439\u043b; \u044f\u043a\u0449\u043e event loop \u0437\u0430\u0432\u0438\u0441 \u2014 \u0444\u0430\u0439\u043b \u0441\u0442\u0430\u0454 \u0437\u0430\u0441\u0442\u0430\u0440\u0456\u043b\u0438\u043c.      \u0421\u0432\u0456\u0436\u0456\u0441\u0442",
+      "file_type": "rationale",
+      "source_file": "bot/main.py",
+      "source_location": "L27",
+      "_origin": "ast",
+      "id": "bot_main_rationale_27",
+      "community": 1,
+      "norm_label": "\u043f\u0438\u0448\u0435 unix-\u0447\u0430\u0441 \u0443 \u0444\u0430\u0438\u043b; \u044f\u043a\u0449\u043e event loop \u0437\u0430\u0432\u0438\u0441 \u2014 \u0444\u0430\u0438\u043b \u0441\u0442\u0430\u0454 \u0437\u0430\u0441\u0442\u0430\u0440\u0456\u043b\u0438\u043c.      \u0441\u0432\u0456\u0436\u0456\u0441\u0442"
+    },
+    {
+      "label": "INSTALL.md \u2014 server installation guide (bot, watchers, autodeploy)",
       "file_type": "document",
       "source_file": "INSTALL.md",
       "source_location": null,
@@ -5447,12 +5457,103 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "install_monitoring_installation_guide",
-      "community": 12,
-      "norm_label": "monitoring (watchers) installation guide"
+      "id": "install_doc",
+      "community": 1,
+      "norm_label": "install.md \u2014 server installation guide (bot, watchers, autodeploy)"
     },
     {
-      "label": "ntfy-bot-watch.service",
+      "label": "New-server-from-scratch checklist (8 ordered steps)",
+      "file_type": "rationale",
+      "source_file": "INSTALL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "install_new_server_checklist",
+      "community": 1,
+      "norm_label": "new-server-from-scratch checklist (8 ordered steps)"
+    },
+    {
+      "label": "Directory-name \u2192 compose project \u2192 container-name coupling",
+      "file_type": "rationale",
+      "source_file": "INSTALL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "install_directory_name_coupling",
+      "community": 1,
+      "norm_label": "directory-name \u2192 compose project \u2192 container-name coupling"
+    },
+    {
+      "label": "Restore bot.db BEFORE first docker compose up",
+      "file_type": "rationale",
+      "source_file": "INSTALL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "install_db_restore_before_first_up",
+      "community": 1,
+      "norm_label": "restore bot.db before first docker compose up"
+    },
+    {
+      "label": "ntfy topic as address-and-password (unguessable, kept out of git)",
+      "file_type": "rationale",
+      "source_file": "INSTALL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "install_ntfy_topic_secret",
+      "community": 1,
+      "norm_label": "ntfy topic as address-and-password (unguessable, kept out of git)"
+    },
+    {
+      "label": "GitHub Actions autodeploy setup (deploy key + 4 secrets + workflow_dispatch smoke test)",
+      "file_type": "rationale",
+      "source_file": "INSTALL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "install_autodeploy_setup",
+      "community": 1,
+      "norm_label": "github actions autodeploy setup (deploy key + 4 secrets + workflow_dispatch smoke test)"
+    },
+    {
+      "label": "/etc/ntfy-bot-watch.env \u2014 host env file (NTFY_TOPIC, CONTAINER, MAX_AGE, RESTART_COOLDOWN, RESTART_GRACE, THRESHOLD, NTFY_SERVER)",
+      "file_type": "concept",
+      "source_file": "INSTALL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "install_ntfy_bot_watch_env",
+      "community": 1,
+      "norm_label": "/etc/ntfy-bot-watch.env \u2014 host env file (ntfy_topic, container, max_age, restart_cooldown, restart_grace, threshold, ntfy_server)"
+    },
+    {
+      "label": "Watchers live on host outside Docker (survive reboot and compose down)",
+      "file_type": "rationale",
+      "source_file": "INSTALL.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "install_watchers_on_host",
+      "community": 1,
+      "norm_label": "watchers live on host outside docker (survive reboot and compose down)"
+    },
+    {
+      "label": "ntfy-bot-watch.service \u2014 listens to docker events, sends crash/stop/up alerts",
       "file_type": "concept",
       "source_file": "INSTALL.md",
       "source_location": null,
@@ -5461,11 +5562,11 @@
       "author": null,
       "contributor": null,
       "id": "install_ntfy_bot_watch_service",
-      "community": 12,
-      "norm_label": "ntfy-bot-watch.service"
+      "community": 1,
+      "norm_label": "ntfy-bot-watch.service \u2014 listens to docker events, sends crash/stop/up alerts"
     },
     {
-      "label": "ntfy-heartbeat-check.timer",
+      "label": "ntfy-heartbeat-check.timer \u2014 every 3 min, auto-restarts on stale heartbeat",
       "file_type": "concept",
       "source_file": "INSTALL.md",
       "source_location": null,
@@ -5474,11 +5575,11 @@
       "author": null,
       "contributor": null,
       "id": "install_ntfy_heartbeat_check_timer",
-      "community": 12,
-      "norm_label": "ntfy-heartbeat-check.timer"
+      "community": 1,
+      "norm_label": "ntfy-heartbeat-check.timer \u2014 every 3 min, auto-restarts on stale heartbeat"
     },
     {
-      "label": "ntfy-disk-check.timer",
+      "label": "ntfy-disk-check.timer \u2014 every 6 h, alerts when disk >85%",
       "file_type": "concept",
       "source_file": "INSTALL.md",
       "source_location": null,
@@ -5487,11 +5588,11 @@
       "author": null,
       "contributor": null,
       "id": "install_ntfy_disk_check_timer",
-      "community": 12,
-      "norm_label": "ntfy-disk-check.timer"
+      "community": 1,
+      "norm_label": "ntfy-disk-check.timer \u2014 every 6 h, alerts when disk >85%"
     },
     {
-      "label": "docker-image-prune.timer",
+      "label": "docker-image-prune.timer \u2014 weekly prune of dangling build images only",
       "file_type": "concept",
       "source_file": "INSTALL.md",
       "source_location": null,
@@ -5500,76 +5601,193 @@
       "author": null,
       "contributor": null,
       "id": "install_docker_image_prune_timer",
-      "community": 12,
-      "norm_label": "docker-image-prune.timer"
+      "community": 19,
+      "norm_label": "docker-image-prune.timer \u2014 weekly prune of dangling build images only"
     },
     {
-      "label": "ntfy topic (NTFY_TOPIC secret)",
-      "file_type": "rationale",
-      "source_file": "INSTALL.md",
-      "source_location": "## \u041a\u0440\u043e\u043a 1: \u0442\u043e\u043f\u0456\u043a ntfy",
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "install_ntfy_topic",
-      "community": 12,
-      "norm_label": "ntfy topic (ntfy_topic secret)"
-    },
-    {
-      "label": "Watchers run on host outside Docker",
-      "file_type": "rationale",
-      "source_file": "INSTALL.md",
+      "label": "RUNBOOK.md \u2014 day-to-day operations cheat sheet",
+      "file_type": "document",
+      "source_file": "RUNBOOK.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "install_watchers_on_host_outside_docker",
-      "community": 12,
-      "norm_label": "watchers run on host outside docker"
+      "id": "runbook_doc",
+      "community": 1,
+      "norm_label": "runbook.md \u2014 day-to-day operations cheat sheet"
     },
     {
-      "label": "/etc/ntfy-bot-watch.env",
+      "label": "docker compose up -d, NOT restart, to re-read .env (env_file baked in at container creation)",
+      "file_type": "rationale",
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "runbook_up_not_restart",
+      "community": 1,
+      "norm_label": "docker compose up -d, not restart, to re-read .env (env_file baked in at container creation)"
+    },
+    {
+      "label": "--build is mandatory on redeploy; without it the bot silently runs old code",
+      "file_type": "rationale",
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "runbook_build_flag_mandatory",
+      "community": 1,
+      "norm_label": "--build is mandatory on redeploy; without it the bot silently runs old code"
+    },
+    {
+      "label": "Heartbeat + auto-restart chain against hangs (container Up but bot frozen)",
+      "file_type": "rationale",
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "runbook_heartbeat_autorestart",
+      "community": 1,
+      "norm_label": "heartbeat + auto-restart chain against hangs (container up but bot frozen)"
+    },
+    {
+      "label": "Heartbeat detector state files: /var/tmp/ntfy-heartbeat.state (ok/stale/stale-escalated) and .last-restart (cooldown anchor)",
       "file_type": "concept",
-      "source_file": "INSTALL.md",
+      "source_file": "RUNBOOK.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "install_env_file_ntfy_bot_watch",
-      "community": 12,
-      "norm_label": "/etc/ntfy-bot-watch.env"
+      "id": "runbook_heartbeat_state_files",
+      "community": 1,
+      "norm_label": "heartbeat detector state files: /var/tmp/ntfy-heartbeat.state (ok/stale/stale-escalated) and .last-restart (cooldown anchor)"
     },
     {
-      "label": "Tunable threshold env vars (MAX_AGE, RESTART_COOLDOWN, RESTART_GRACE, THRESHOLD)",
+      "label": "Re-arm detector by deleting both state files; next timer tick starts clean at ok",
       "file_type": "rationale",
-      "source_file": "INSTALL.md",
-      "source_location": "## \u042f\u043a \u0446\u0435 \u0432\u043b\u0430\u0448\u0442\u043e\u0432\u0430\u043d\u043e",
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "install_threshold_env_vars",
-      "community": 12,
-      "norm_label": "tunable threshold env vars (max_age, restart_cooldown, restart_grace, threshold)"
-    },
-    {
-      "label": "scripts/ntfy-send.sh",
-      "file_type": "code",
-      "source_file": "INSTALL.md",
+      "source_file": "RUNBOOK.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "scripts_ntfy_send_sh",
-      "community": 12,
-      "norm_label": "scripts/ntfy-send.sh"
+      "id": "runbook_rearm_by_deleting_state",
+      "community": 1,
+      "norm_label": "re-arm detector by deleting both state files; next timer tick starts clean at ok"
     },
     {
-      "label": "scripts/check-heartbeat.sh",
+      "label": "30-min restart cooldown: repeated hang gets escalation only, no restart loop that masks systemic problems",
+      "file_type": "rationale",
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "runbook_restart_cooldown",
+      "community": 1,
+      "norm_label": "30-min restart cooldown: repeated hang gets escalation only, no restart loop that masks systemic problems"
+    },
+    {
+      "label": "Fire drill \u2014 live test of hang\u2192detect\u2192restart\u2192push chain (host-side kill -STOP via .State.Pid, ~5-8 min downtime)",
+      "file_type": "rationale",
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "runbook_fire_drill",
+      "community": 1,
+      "norm_label": "fire drill \u2014 live test of hang\u2192detect\u2192restart\u2192push chain (host-side kill -stop via .state.pid, ~5-8 min downtime)"
+    },
+    {
+      "label": "docker exec kill -STOP 1 does not work: kernel ignores signals to PID 1 from inside its own PID namespace",
+      "file_type": "rationale",
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "runbook_pid_namespace_trap",
+      "community": 1,
+      "norm_label": "docker exec kill -stop 1 does not work: kernel ignores signals to pid 1 from inside its own pid namespace"
+    },
+    {
+      "label": "docker pause unsuitable for fire drill: docker restart refuses paused containers in some versions, breaking the mechanism under test",
+      "file_type": "rationale",
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "runbook_docker_pause_unsuitable",
+      "community": 1,
+      "norm_label": "docker pause unsuitable for fire drill: docker restart refuses paused containers in some versions, breaking the mechanism under test"
+    },
+    {
+      "label": "Mandatory post-drill cleanup: rm /var/tmp/ntfy-heartbeat.last-restart to restore the cooldown immediately",
+      "file_type": "rationale",
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "runbook_fire_drill_cleanup",
+      "community": 1,
+      "norm_label": "mandatory post-drill cleanup: rm /var/tmp/ntfy-heartbeat.last-restart to restore the cooldown immediately"
+    },
+    {
+      "label": "Foreign containers on same server (tg-news-filter, my-tg-bot) \u2014 never docker system prune -a",
+      "file_type": "rationale",
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "runbook_neighbor_containers",
+      "community": 19,
+      "norm_label": "foreign containers on same server (tg-news-filter, my-tg-bot) \u2014 never docker system prune -a"
+    },
+    {
+      "label": "restart: unless-stopped + enabled docker service = bot self-heals after server reboot (but not after compose down)",
+      "file_type": "rationale",
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "runbook_restart_unless_stopped",
+      "community": 1,
+      "norm_label": "restart: unless-stopped + enabled docker service = bot self-heals after server reboot (but not after compose down)"
+    },
+    {
+      "label": "Green 'bot up' alert means really working: watcher waits up to 90s for fresh heartbeat, otherwise sends 'bot did not show up for work'",
+      "file_type": "rationale",
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "id": "runbook_up_readiness_check",
+      "community": 1,
+      "norm_label": "green 'bot up' alert means really working: watcher waits up to 90s for fresh heartbeat, otherwise sends 'bot did not show up for work'"
+    },
+    {
+      "label": "scripts/check-heartbeat.sh \u2014 heartbeat freshness check + auto-restart",
       "file_type": "code",
       "source_file": "INSTALL.md",
       "source_location": null,
@@ -5578,203 +5796,47 @@
       "author": null,
       "contributor": null,
       "id": "scripts_check_heartbeat_sh",
-      "community": 12,
-      "norm_label": "scripts/check-heartbeat.sh"
+      "community": 1,
+      "norm_label": "scripts/check-heartbeat.sh \u2014 heartbeat freshness check + auto-restart"
     },
     {
-      "label": "scripts/ntfy-docker-watch.sh",
+      "label": "scripts/deploy.sh \u2014 git ff-merge + compose up -d --build",
       "file_type": "code",
-      "source_file": "RUNBOOK.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "scripts_ntfy_docker_watch_sh",
-      "community": 12,
-      "norm_label": "scripts/ntfy-docker-watch.sh"
-    },
-    {
-      "label": "scripts/server-maint.sh",
-      "file_type": "code",
-      "source_file": "RUNBOOK.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "scripts_server_maint_sh",
-      "community": 12,
-      "norm_label": "scripts/server-maint.sh"
-    },
-    {
-      "label": "scripts/deploy.sh",
-      "file_type": "code",
-      "source_file": "RUNBOOK.md",
+      "source_file": "INSTALL.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
       "id": "scripts_deploy_sh",
-      "community": 18,
-      "norm_label": "scripts/deploy.sh"
+      "community": 1,
+      "norm_label": "scripts/deploy.sh \u2014 git ff-merge + compose up -d --build"
     },
     {
-      "label": "Bot operations runbook",
-      "file_type": "document",
-      "source_file": "RUNBOOK.md",
+      "label": ".github/workflows/deploy.yml \u2014 Test & Deploy workflow (push to main + workflow_dispatch)",
+      "file_type": "code",
+      "source_file": "INSTALL.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "runbook_operations_runbook",
-      "community": 9,
-      "norm_label": "bot operations runbook"
+      "id": "github_workflows_deploy",
+      "community": 1,
+      "norm_label": ".github/workflows/deploy.yml \u2014 test & deploy workflow (push to main + workflow_dispatch)"
     },
     {
-      "label": "Heartbeat liveness mechanism (data/heartbeat)",
+      "label": "systemd reads watcher scripts straight from the git working tree, so git merge auto-updates them (unit files excepted \u2014 need re-copy + daemon-reload)",
       "file_type": "rationale",
-      "source_file": "RUNBOOK.md",
-      "source_location": "## \u041c\u043e\u043d\u0456\u0442\u043e\u0440\u0438\u043d\u0433 (ntfy)",
+      "source_file": "INSTALL.md",
+      "source_location": null,
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "runbook_heartbeat_mechanism",
-      "community": 12,
-      "norm_label": "heartbeat liveness mechanism (data/heartbeat)"
-    },
-    {
-      "label": "Auto-restart on hang with cooldown escalation",
-      "file_type": "rationale",
-      "source_file": "RUNBOOK.md",
-      "source_location": "## \u041c\u043e\u043d\u0456\u0442\u043e\u0440\u0438\u043d\u0433 (ntfy)",
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "runbook_auto_restart_on_hang",
-      "community": 12,
-      "norm_label": "auto-restart on hang with cooldown escalation"
-    },
-    {
-      "label": "Auto-deploy via GitHub Actions on merge to main",
-      "file_type": "rationale",
-      "source_file": "RUNBOOK.md",
-      "source_location": "## \u041e\u043d\u043e\u0432\u0438\u0442\u0438 \u043a\u043e\u0434",
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "runbook_deploy_via_github_actions",
-      "community": 18,
-      "norm_label": "auto-deploy via github actions on merge to main"
-    },
-    {
-      "label": "--build required on redeploy",
-      "file_type": "rationale",
-      "source_file": "RUNBOOK.md",
-      "source_location": "## \u041e\u043d\u043e\u0432\u0438\u0442\u0438 \u043a\u043e\u0434",
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "runbook_build_flag_requirement",
-      "community": 18,
-      "norm_label": "--build required on redeploy"
-    },
-    {
-      "label": "docker compose up -d (not restart) after .env change",
-      "file_type": "rationale",
-      "source_file": "RUNBOOK.md",
-      "source_location": "## \u0417\u043c\u0456\u043d\u0438\u0442\u0438 .env",
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "runbook_up_d_not_restart",
-      "community": 9,
-      "norm_label": "docker compose up -d (not restart) after .env change"
-    },
-    {
-      "label": "ALLOWED_USER_IDS access control",
-      "file_type": "rationale",
-      "source_file": "RUNBOOK.md",
-      "source_location": "## \u0414\u043e\u0441\u0442\u0443\u043f",
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "runbook_allowed_user_ids",
-      "community": 9,
-      "norm_label": "allowed_user_ids access control"
-    },
-    {
-      "label": "LLM provider fallback (OpenRouter primary, Gemini backup)",
-      "file_type": "rationale",
-      "source_file": "RUNBOOK.md",
-      "source_location": "## \u041a\u043b\u044e\u0447\u0456 \u0432 .env",
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "runbook_llm_provider_fallback",
-      "community": 9,
-      "norm_label": "llm provider fallback (openrouter primary, gemini backup)"
-    },
-    {
-      "label": "Weekly dangling-only docker image prune",
-      "file_type": "rationale",
-      "source_file": "RUNBOOK.md",
-      "source_location": "## \u041c\u043e\u043d\u0456\u0442\u043e\u0440\u0438\u043d\u0433 (ntfy)",
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "runbook_dangling_image_prune",
-      "community": 12,
-      "norm_label": "weekly dangling-only docker image prune"
-    },
-    {
-      "label": "Shared server with neighbor containers (tg-news-filter, my-tg-bot)",
-      "file_type": "rationale",
-      "source_file": "RUNBOOK.md",
-      "source_location": "## \u041f\u0440\u043e \u0441\u0435\u0440\u0432\u0435\u0440",
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "runbook_shared_server_neighbor_containers",
-      "community": 12,
-      "norm_label": "shared server with neighbor containers (tg-news-filter, my-tg-bot)"
-    },
-    {
-      "label": "restart: unless-stopped policy for reboot survival",
-      "file_type": "rationale",
-      "source_file": "RUNBOOK.md",
-      "source_location": "## \u041f\u0440\u043e \u0441\u0435\u0440\u0432\u0435\u0440",
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "runbook_restart_unless_stopped",
-      "community": 9,
-      "norm_label": "restart: unless-stopped policy for reboot survival"
-    },
-    {
-      "label": "Startup readiness check (green only after fresh heartbeat)",
-      "file_type": "rationale",
-      "source_file": "RUNBOOK.md",
-      "source_location": "## \u041c\u043e\u043d\u0456\u0442\u043e\u0440\u0438\u043d\u0433 (ntfy)",
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "id": "runbook_startup_readiness_check",
-      "community": 12,
-      "norm_label": "startup readiness check (green only after fresh heartbeat)"
+      "id": "install_scripts_from_worktree",
+      "community": 1,
+      "norm_label": "systemd reads watcher scripts straight from the git working tree, so git merge auto-updates them (unit files excepted \u2014 need re-copy + daemon-reload)"
     }
   ],
   "links": [
@@ -9142,26 +9204,15 @@
       "target": "bot"
     },
     {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "bot/main.py",
-      "source_location": "L56",
-      "weight": 1.0,
-      "source": "bot_main_main",
-      "target": "bot"
-    },
-    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "bot/main.py",
       "source_location": "L16",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "bot_main",
-      "target": "bot_middlewares"
+      "target": "bot_middlewares",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -9508,9 +9559,9 @@
       "source_file": "bot/main.py",
       "source_location": "L26",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "bot_main_heartbeat_loop",
-      "target": "path"
+      "target": "path",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9519,9 +9570,9 @@
       "source_file": "bot/main.py",
       "source_location": "L85",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "bot_main_main",
-      "target": "path"
+      "target": "path",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -9530,9 +9581,9 @@
       "source_file": "bot/main.py",
       "source_location": "L37",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "bot_main_run_migrations",
-      "target": "path"
+      "target": "path",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -10129,9 +10180,9 @@
       "source_file": "bot/main.py",
       "source_location": "L15",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "bot_main",
-      "target": "bot_handlers_group"
+      "target": "bot_handlers_group",
+      "confidence_score": 1.0
     },
     {
       "relation": "uses",
@@ -10538,9 +10589,9 @@
       "source_file": "bot/main.py",
       "source_location": "L15",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "bot_main",
-      "target": "bot_handlers_menu"
+      "target": "bot_handlers_menu",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -10824,9 +10875,9 @@
       "source_file": "bot/main.py",
       "source_location": "L17",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "bot_main",
-      "target": "bot_services_llm_base"
+      "target": "bot_services_llm_base",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11404,9 +11455,9 @@
       "source_file": "bot/main.py",
       "source_location": "L18",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "bot_main",
-      "target": "bot_services_llm_gemini"
+      "target": "bot_services_llm_gemini",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -12455,9 +12506,9 @@
       "source_file": "bot/main.py",
       "source_location": "L14",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "bot_main",
-      "target": "bot_config"
+      "target": "bot_config",
+      "confidence_score": 1.0
     },
     {
       "relation": "references",
@@ -12527,9 +12578,9 @@
       "source_file": "bot/main.py",
       "source_location": "L19",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "bot_main",
-      "target": "bot_services_llm_openrouter"
+      "target": "bot_services_llm_openrouter",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -13126,9 +13177,9 @@
       "source_file": "bot/main.py",
       "source_location": "L15",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "bot_main",
-      "target": "bot_handlers_add_recipe"
+      "target": "bot_handlers_add_recipe",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -14596,9 +14647,9 @@
       "source_file": "bot/main.py",
       "source_location": "L15",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "bot_main",
-      "target": "bot_handlers_query"
+      "target": "bot_handlers_query",
+      "confidence_score": 1.0
     },
     {
       "relation": "uses",
@@ -15378,9 +15429,9 @@
       "source_file": "bot/main.py",
       "source_location": "L15",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "bot_main",
-      "target": "bot_handlers_start"
+      "target": "bot_handlers_start",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -15800,122 +15851,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "bot/main.py",
-      "source_location": "L26",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "bot_main",
-      "target": "bot_main_heartbeat_loop"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "bot/main.py",
-      "source_location": "L45",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "bot_main",
-      "target": "bot_main_main"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "bot/main.py",
-      "source_location": "L36",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "bot_main",
-      "target": "bot_main_run_migrations"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/test_heartbeat.py",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_test_heartbeat",
-      "target": "bot_main"
-    },
-    {
-      "relation": "implements",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "RUNBOOK.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "bot_main_heartbeat_loop",
-      "target": "runbook_heartbeat_mechanism"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "bot/main.py",
-      "source_location": "L85",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "bot_main_main",
-      "target": "bot_main_heartbeat_loop"
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "bot/main.py",
-      "source_location": "L27",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "bot_main_rationale_27",
-      "target": "bot_main_heartbeat_loop"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/test_heartbeat.py",
-      "source_location": "L6",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_test_heartbeat",
-      "target": "bot_main_heartbeat_loop"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/test_heartbeat.py",
-      "source_location": "L19",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_test_heartbeat_test_heartbeat_rewrites_on_each_tick",
-      "target": "bot_main_heartbeat_loop"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "tests/test_heartbeat.py",
-      "source_location": "L11",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "tests_test_heartbeat_test_heartbeat_writes_fresh_timestamp",
-      "target": "bot_main_heartbeat_loop"
-    },
-    {
-      "relation": "indirect_call",
-      "context": "argument",
-      "confidence": "INFERRED",
-      "source_file": "bot/main.py",
-      "source_location": "L54",
-      "weight": 1.0,
-      "confidence_score": 0.5,
-      "source": "bot_main_main",
-      "target": "bot_main_run_migrations"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "bot/rendering.py",
       "source_location": "L42",
       "weight": 1.0,
@@ -16253,6 +16188,16 @@
       "target": "scripts_deploy_sh__entry"
     },
     {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "install_ntfy_bot_watch_service",
+      "target": "scripts_ntfy_docker_watch"
+    },
+    {
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "scripts/ntfy-docker-watch.sh",
@@ -16305,6 +16250,26 @@
       "target": "scripts_ntfy_docker_watch_wait_ready"
     },
     {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "INSTALL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "install_ntfy_bot_watch_service",
+      "target": "scripts_ntfy_send"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "INSTALL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "scripts_check_heartbeat_sh",
+      "target": "scripts_ntfy_send"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts/ntfy-send.sh",
@@ -16315,6 +16280,16 @@
       "target": "scripts_ntfy_send_sh__entry"
     },
     {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "install_ntfy_disk_check_timer",
+      "target": "scripts_server_maint"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts/server-maint.sh",
@@ -16323,6 +16298,28 @@
       "confidence_score": 1.0,
       "source": "scripts_server_maint",
       "target": "scripts_server_maint_sh__entry"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_heartbeat.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_heartbeat",
+      "target": "bot_main"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_heartbeat.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_heartbeat",
+      "target": "bot_main_heartbeat_loop"
     },
     {
       "relation": "contains",
@@ -16353,6 +16350,28 @@
       "confidence_score": 1.0,
       "source": "tests_test_heartbeat_rationale_1",
       "target": "tests_test_heartbeat"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_heartbeat.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_heartbeat_test_heartbeat_writes_fresh_timestamp",
+      "target": "bot_main_heartbeat_loop"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_heartbeat.py",
+      "source_location": "L19",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_heartbeat_test_heartbeat_rewrites_on_each_tick",
+      "target": "bot_main_heartbeat_loop"
     },
     {
       "relation": "contains",
@@ -17080,16 +17099,6 @@
       "target": "readme_whitelist_fail_closed"
     },
     {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "README.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "readme_sho_poisty_bot",
-      "target": "runbook_operations_runbook"
-    },
-    {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -17145,8 +17154,69 @@
       "source_file": "scripts/check-heartbeat.sh",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_check_heartbeat",
-      "target": "scripts_check_heartbeat_sh__entry",
+      "target": "scripts_check_heartbeat_sh__entry"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "bot/main.py",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "bot_main",
+      "target": "bot_main_heartbeat_loop",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "bot/main.py",
+      "source_location": "L45",
+      "weight": 1.0,
+      "source": "bot_main",
+      "target": "bot_main_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "bot/main.py",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "bot_main",
+      "target": "bot_main_run_migrations",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "INSTALL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "bot_main_heartbeat_loop",
+      "target": "scripts_check_heartbeat_sh"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "bot/main.py",
+      "source_location": "L85",
+      "weight": 1.0,
+      "source": "bot_main_main",
+      "target": "bot_main_heartbeat_loop",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "bot/main.py",
+      "source_location": "L27",
+      "weight": 1.0,
+      "source": "bot_main_rationale_27",
+      "target": "bot_main_heartbeat_loop",
       "confidence_score": 1.0
     },
     {
@@ -17156,68 +17226,59 @@
       "source_file": "INSTALL.md",
       "source_location": null,
       "weight": 1.0,
-      "source": "install_monitoring_installation_guide",
-      "target": "install_docker_image_prune_timer"
+      "source": "install_doc",
+      "target": "bot_main_heartbeat_loop"
     },
     {
       "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "INSTALL.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "install_monitoring_installation_guide",
-      "target": "install_ntfy_bot_watch_service"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "INSTALL.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "install_monitoring_installation_guide",
-      "target": "install_ntfy_disk_check_timer"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "INSTALL.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "install_monitoring_installation_guide",
-      "target": "install_ntfy_heartbeat_check_timer"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "INSTALL.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "install_monitoring_installation_guide",
-      "target": "runbook_operations_runbook"
-    },
-    {
-      "relation": "implements",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "RUNBOOK.md",
       "source_location": null,
       "weight": 1.0,
-      "source": "install_ntfy_bot_watch_service",
-      "target": "runbook_startup_readiness_check"
+      "source": "runbook_doc",
+      "target": "bot_main_heartbeat_loop"
     },
     {
-      "relation": "calls",
+      "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "RUNBOOK.md",
       "source_location": null,
       "weight": 1.0,
-      "source": "install_ntfy_bot_watch_service",
-      "target": "scripts_ntfy_docker_watch_sh"
+      "source": "runbook_up_readiness_check",
+      "target": "bot_main_heartbeat_loop"
+    },
+    {
+      "relation": "indirect_call",
+      "context": "argument",
+      "confidence": "INFERRED",
+      "source_file": "bot/main.py",
+      "source_location": "L54",
+      "weight": 1.0,
+      "source": "bot_main_main",
+      "target": "bot_main_run_migrations",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "INSTALL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "install_doc",
+      "target": "install_new_server_checklist"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "INSTALL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "install_doc",
+      "target": "runbook_doc"
     },
     {
       "relation": "rationale_for",
@@ -17226,7 +17287,127 @@
       "source_file": "INSTALL.md",
       "source_location": null,
       "weight": 1.0,
-      "source": "install_watchers_on_host_outside_docker",
+      "source": "install_db_restore_before_first_up",
+      "target": "install_new_server_checklist"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "INSTALL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "install_directory_name_coupling",
+      "target": "install_new_server_checklist"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "INSTALL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "install_new_server_checklist",
+      "target": "runbook_fire_drill"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "runbook_restart_unless_stopped",
+      "target": "install_new_server_checklist"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "INSTALL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "install_directory_name_coupling",
+      "target": "install_ntfy_bot_watch_env"
+    },
+    {
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.65,
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "install_directory_name_coupling",
+      "target": "runbook_fire_drill"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "INSTALL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "install_ntfy_topic_secret",
+      "target": "install_ntfy_bot_watch_env"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "INSTALL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "install_autodeploy_setup",
+      "target": "github_workflows_deploy"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "INSTALL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "install_scripts_from_worktree",
+      "target": "install_autodeploy_setup"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "INSTALL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "install_ntfy_bot_watch_env",
+      "target": "install_ntfy_bot_watch_service"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "INSTALL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "install_ntfy_bot_watch_env",
+      "target": "scripts_check_heartbeat_sh"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "INSTALL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "install_watchers_on_host",
+      "target": "install_ntfy_bot_watch_service"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "runbook_up_readiness_check",
       "target": "install_ntfy_bot_watch_service"
     },
     {
@@ -17240,104 +17421,14 @@
       "target": "scripts_check_heartbeat_sh"
     },
     {
-      "relation": "calls",
+      "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "RUNBOOK.md",
       "source_location": null,
       "weight": 1.0,
-      "source": "install_ntfy_disk_check_timer",
-      "target": "scripts_server_maint_sh"
-    },
-    {
-      "relation": "implements",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "RUNBOOK.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "install_docker_image_prune_timer",
-      "target": "runbook_dangling_image_prune"
-    },
-    {
-      "relation": "shares_data_with",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "INSTALL.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "install_env_file_ntfy_bot_watch",
-      "target": "install_ntfy_topic"
-    },
-    {
-      "relation": "shares_data_with",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "INSTALL.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "scripts_ntfy_send_sh",
-      "target": "install_ntfy_topic"
-    },
-    {
-      "relation": "shares_data_with",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "INSTALL.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "install_threshold_env_vars",
-      "target": "install_env_file_ntfy_bot_watch"
-    },
-    {
-      "relation": "shares_data_with",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "INSTALL.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "runbook_auto_restart_on_hang",
-      "target": "install_threshold_env_vars"
-    },
-    {
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "INSTALL.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "scripts_check_heartbeat_sh",
-      "target": "scripts_ntfy_send_sh"
-    },
-    {
-      "relation": "calls",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "INSTALL.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "scripts_ntfy_docker_watch_sh",
-      "target": "scripts_ntfy_send_sh"
-    },
-    {
-      "relation": "implements",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "RUNBOOK.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "scripts_check_heartbeat_sh",
-      "target": "runbook_auto_restart_on_hang"
-    },
-    {
-      "relation": "shares_data_with",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "RUNBOOK.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "scripts_check_heartbeat_sh",
-      "target": "runbook_heartbeat_mechanism"
+      "source": "runbook_heartbeat_autorestart",
+      "target": "install_ntfy_heartbeat_check_timer"
     },
     {
       "relation": "rationale_for",
@@ -17346,68 +17437,48 @@
       "source_file": "RUNBOOK.md",
       "source_location": null,
       "weight": 1.0,
-      "source": "runbook_build_flag_requirement",
+      "source": "runbook_neighbor_containers",
+      "target": "install_docker_image_prune_timer"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "runbook_doc",
+      "target": "runbook_fire_drill"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "runbook_up_not_restart",
+      "target": "runbook_doc"
+    },
+    {
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "runbook_build_flag_mandatory",
+      "target": "runbook_up_not_restart"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "runbook_build_flag_mandatory",
       "target": "scripts_deploy_sh"
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "RUNBOOK.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "runbook_deploy_via_github_actions",
-      "target": "scripts_deploy_sh"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "RUNBOOK.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "runbook_operations_runbook",
-      "target": "runbook_allowed_user_ids"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "RUNBOOK.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "runbook_operations_runbook",
-      "target": "runbook_llm_provider_fallback"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "RUNBOOK.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "runbook_operations_runbook",
-      "target": "runbook_restart_unless_stopped"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "RUNBOOK.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "runbook_operations_runbook",
-      "target": "runbook_up_d_not_restart"
-    },
-    {
-      "relation": "shares_data_with",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "RUNBOOK.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "runbook_startup_readiness_check",
-      "target": "runbook_heartbeat_mechanism"
     },
     {
       "relation": "conceptually_related_to",
@@ -17416,8 +17487,8 @@
       "source_file": "RUNBOOK.md",
       "source_location": null,
       "weight": 1.0,
-      "source": "runbook_up_d_not_restart",
-      "target": "runbook_allowed_user_ids"
+      "source": "runbook_fire_drill",
+      "target": "runbook_heartbeat_autorestart"
     },
     {
       "relation": "rationale_for",
@@ -17426,23 +17497,115 @@
       "source_file": "RUNBOOK.md",
       "source_location": null,
       "weight": 1.0,
-      "source": "runbook_shared_server_neighbor_containers",
-      "target": "runbook_dangling_image_prune"
+      "source": "runbook_restart_cooldown",
+      "target": "runbook_heartbeat_autorestart"
+    },
+    {
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "runbook_heartbeat_state_files",
+      "target": "scripts_check_heartbeat_sh"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "runbook_rearm_by_deleting_state",
+      "target": "runbook_heartbeat_state_files"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "runbook_restart_cooldown",
+      "target": "runbook_heartbeat_state_files"
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "runbook_fire_drill_cleanup",
+      "target": "runbook_restart_cooldown"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "runbook_docker_pause_unsuitable",
+      "target": "runbook_fire_drill"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "runbook_fire_drill_cleanup",
+      "target": "runbook_fire_drill"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RUNBOOK.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "runbook_pid_namespace_trap",
+      "target": "runbook_fire_drill"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "INSTALL.md",
+      "source_location": null,
+      "weight": 1.0,
+      "source": "github_workflows_deploy",
+      "target": "scripts_deploy_sh"
     }
   ],
   "hyperedges": [
     {
-      "id": "hyper_ntfy_monitoring_stack",
-      "label": "ntfy monitoring stack (systemd units + scripts + heartbeat)",
+      "id": "hyper_hang_detection_chain",
+      "label": "Hang detection and auto-restart chain: bot heartbeat \u2192 timer check \u2192 restart \u2192 ntfy alerts",
+      "nodes": [
+        "bot_main_heartbeat_loop",
+        "install_ntfy_heartbeat_check_timer",
+        "scripts_check_heartbeat_sh",
+        "runbook_heartbeat_state_files",
+        "scripts_ntfy_send"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RUNBOOK.md"
+    },
+    {
+      "id": "hyper_host_watchers",
+      "label": "Host-side systemd watcher suite living outside Docker",
       "nodes": [
         "install_ntfy_bot_watch_service",
         "install_ntfy_heartbeat_check_timer",
         "install_ntfy_disk_check_timer",
         "install_docker_image_prune_timer",
-        "scripts_ntfy_send_sh",
-        "scripts_check_heartbeat_sh",
-        "scripts_ntfy_docker_watch_sh",
-        "scripts_server_maint_sh"
+        "install_ntfy_bot_watch_env"
       ],
       "relation": "form",
       "confidence": "EXTRACTED",
@@ -17450,19 +17613,17 @@
       "source_file": "INSTALL.md"
     },
     {
-      "id": "hyper_hang_detection_pipeline",
-      "label": "Hang detection and recovery pipeline",
+      "id": "hyper_autodeploy_pipeline",
+      "label": "Autodeploy pipeline: merge to main \u2192 GitHub Actions \u2192 SSH \u2192 deploy.sh",
       "nodes": [
-        "bot_main_heartbeat_loop",
-        "runbook_heartbeat_mechanism",
-        "scripts_check_heartbeat_sh",
-        "runbook_auto_restart_on_hang",
-        "runbook_startup_readiness_check"
+        "github_workflows_deploy",
+        "scripts_deploy_sh",
+        "install_autodeploy_setup"
       ],
       "relation": "implement",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "RUNBOOK.md"
+      "source_file": "INSTALL.md"
     },
     {
       "id": "automated_deploy_pipeline",
@@ -17525,5 +17686,5 @@
       "source_file": "ARCHITECTURE.md"
     }
   ],
-  "built_at_commit": "149fc9c0bb96861afd7d43e0a2be4f90828d40cd"
+  "built_at_commit": "eb82f17b3d255f636308d87bc541298e92bfb7c6"
 }
