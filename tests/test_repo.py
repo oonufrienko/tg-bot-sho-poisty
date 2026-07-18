@@ -36,6 +36,14 @@ async def _make_user_with_recipe(session, tg_id=1, categories=None):
     return user, recipe
 
 
+async def test_count_users(session):
+    assert await repo.count_users(session) == 0
+    await repo.ensure_user(session, 1, "Перший")
+    await repo.ensure_user(session, 2, "Друга")
+    await repo.ensure_user(session, 1, "Перший знову")  # не дублюється
+    assert await repo.count_users(session) == 2
+
+
 async def test_ensure_user_creates_personal_group(session):
     user = await repo.ensure_user(session, 42, "Олексій")
     assert user.active_group_id is not None

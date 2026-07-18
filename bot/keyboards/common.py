@@ -49,7 +49,7 @@ class MenuCB(CallbackData, prefix="menu"):
 
 
 class GroupCB(CallbackData, prefix="grp"):
-    action: str  # switch | create | invite | members
+    action: str  # switch | create | invite | members | stats
     group_id: int = 0
 
 

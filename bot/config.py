@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     # Модель задається в .env; дефолт дублює прод, щоб вони не розходились
     openrouter_model: str = "google/gemini-3.1-flash-lite-preview"
     allowed_user_ids: str = ""
+    admin_user_ids: str = ""
     database_path: str = "data/bot.db"
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
@@ -27,6 +28,13 @@ class Settings(BaseSettings):
             return frozenset()
         return frozenset(
             int(part) for part in self.allowed_user_ids.replace(" ", "").split(",") if part
+        )
+
+    @property
+    def admin_ids(self) -> frozenset[int]:
+        """Адміни бачать «Статистика». Без '*'-магії: порожнє = адмінів немає."""
+        return frozenset(
+            int(part) for part in self.admin_user_ids.replace(" ", "").split(",") if part
         )
 
     @property

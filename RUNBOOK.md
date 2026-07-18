@@ -44,6 +44,7 @@ docker compose up -d      # саме up -d, НЕ restart
 | `GEMINI_API_KEY` | Запасний — вмикається, лише якщо OpenRouter не заданий |
 | `OPENROUTER_MODEL` | Модель — зараз `google/gemini-3.1-flash-lite-preview` |
 | `ALLOWED_USER_IDS` | Хто має доступ (див. нижче) |
+| `ADMIN_USER_IDS` | Адміни: бачать «📊 Статистика» у меню «Група» (користувачі, баланс OpenRouter). Адмін теж має бути в `ALLOWED_USER_IDS` |
 
 Потрібен хоча б один із двох ключів LLM, інакше бот не стартує.
 
