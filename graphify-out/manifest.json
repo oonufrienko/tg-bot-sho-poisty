@@ -15,7 +15,7 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "bot/config.py": {
-    "mtime": 1784356062.567555,
+    "mtime": 1784357507.44776,
     "ast_hash": "502e809f43dbd34982ce89e7d60d4385",
     "semantic_hash": "502e809f43dbd34982ce89e7d60d4385"
   },
@@ -30,7 +30,7 @@
     "semantic_hash": "22a38744591e0224a2aeaf35628f3666"
   },
   "bot/db/repo.py": {
-    "mtime": 1784356091.008379,
+    "mtime": 1784357507.4486191,
     "ast_hash": "834ac5706cdd99d4e407e14b16ff7882",
     "semantic_hash": "834ac5706cdd99d4e407e14b16ff7882"
   },
@@ -50,9 +50,9 @@
     "semantic_hash": "6176c564ffc5f5ed934e257ea7ce4ddf"
   },
   "bot/handlers/group.py": {
-    "mtime": 1784356120.3369591,
-    "ast_hash": "a89f04f2f90bb88dcbb89e18680c9942",
-    "semantic_hash": "a89f04f2f90bb88dcbb89e18680c9942"
+    "mtime": 1784357821.2988296,
+    "ast_hash": "6b50921309c462c510dd79d92650df9d",
+    "semantic_hash": "6b50921309c462c510dd79d92650df9d"
   },
   "bot/handlers/menu.py": {
     "mtime": 1784041378.7109306,
@@ -65,9 +65,9 @@
     "semantic_hash": "15810c53a695b31759fc324336303b1d"
   },
   "bot/handlers/start.py": {
-    "mtime": 1784215948.2188516,
-    "ast_hash": "196c8b1f4fe14def5c174c6b3d698d55",
-    "semantic_hash": "196c8b1f4fe14def5c174c6b3d698d55"
+    "mtime": 1784357821.2982836,
+    "ast_hash": "b34193fb8a8021548a1107bcf60cc953",
+    "semantic_hash": "b34193fb8a8021548a1107bcf60cc953"
   },
   "bot/keyboards/__init__.py": {
     "mtime": 1783966358.7175741,
@@ -75,9 +75,9 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "bot/keyboards/common.py": {
-    "mtime": 1784356096.4532664,
-    "ast_hash": "08ac2a4c05cc98271ecb4b60f94b57ea",
-    "semantic_hash": "08ac2a4c05cc98271ecb4b60f94b57ea"
+    "mtime": 1784357803.0697408,
+    "ast_hash": "8fb5f70b459c5519654f89f33d3ba127",
+    "semantic_hash": "8fb5f70b459c5519654f89f33d3ba127"
   },
   "bot/main.py": {
     "mtime": 1784316089.7622721,
@@ -145,7 +145,7 @@
     "semantic_hash": "cbdfa1bb424f4c6e9d0ca2bc85a4bec3"
   },
   "pyproject.toml": {
-    "mtime": 1784356138.1384802,
+    "mtime": 1784357507.4607067,
     "ast_hash": "848c5cdcadef7926bf9058f926822099",
     "semantic_hash": "848c5cdcadef7926bf9058f926822099"
   },
@@ -155,7 +155,7 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "tests/test_repo.py": {
-    "mtime": 1784356166.4471223,
+    "mtime": 1784357507.4624364,
     "ast_hash": "4852daada89ca9655e87b1611eae3328",
     "semantic_hash": "4852daada89ca9655e87b1611eae3328"
   },
@@ -285,9 +285,9 @@
     "semantic_hash": "717b77af08ab69c50348226462990607"
   },
   "RUNBOOK.md": {
-    "mtime": 1784356191.186486,
-    "ast_hash": "a534c44ba700d1cf927c8e4d5865bb5d",
-    "semantic_hash": "a534c44ba700d1cf927c8e4d5865bb5d"
+    "mtime": 1784357859.963785,
+    "ast_hash": "ec394184178b6d4544c099a889c0dc2c",
+    "semantic_hash": "ec394184178b6d4544c099a889c0dc2c"
   },
   "alembic/versions/b3c41d92ae51_drop_diet_category.py": {
     "mtime": 1784356051.6560023,
@@ -295,13 +295,13 @@
     "semantic_hash": "054e558126552afa7e6eff2ac4233a44"
   },
   "bot/services/openrouter_credits.py": {
-    "mtime": 1784356071.6131246,
+    "mtime": 1784357507.4512105,
     "ast_hash": "cbd6a9b6117e4f265d89cbe2fddb45c7",
     "semantic_hash": "cbd6a9b6117e4f265d89cbe2fddb45c7"
   },
   "tests/test_admin_stats.py": {
-    "mtime": 1784356173.7476456,
-    "ast_hash": "81ed9bf304e8e7bb1dd7b9fb5c308dc1",
-    "semantic_hash": "81ed9bf304e8e7bb1dd7b9fb5c308dc1"
+    "mtime": 1784357847.7501266,
+    "ast_hash": "7abe236d474f48fb4c5451ba41b53ba8",
+    "semantic_hash": "7abe236d474f48fb4c5451ba41b53ba8"
   }
 }
