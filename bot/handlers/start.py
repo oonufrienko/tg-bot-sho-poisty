@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from bot.db import repo
 from bot.db.models import User
 from bot.handlers.group import offer_move_recipes
-from bot.keyboards.common import main_keyboard
+from bot.keyboards.common import main_keyboard_for
 
 router = Router(name="start")
 
@@ -56,23 +56,23 @@ async def start_with_link(
             await message.answer(
                 f"Вітаю! Ви приєднались до групи <b>{escape(group.name)}</b> 🎉\n"
                 "Тепер вам доступна спільна база рецептів цієї групи.",
-                reply_markup=main_keyboard(),
+                reply_markup=main_keyboard_for(user),
             )
             await offer_move_recipes(message, session, user, prev_group_id, group)
             return
         await message.answer(
             "Це запрошення недійсне 😔 Попросіть нове посилання.",
-            reply_markup=main_keyboard(),
+            reply_markup=main_keyboard_for(user),
         )
         return
-    await message.answer(WELCOME, reply_markup=main_keyboard())
+    await message.answer(WELCOME, reply_markup=main_keyboard_for(user))
 
 
 @router.message(CommandStart())
-async def start(message: Message) -> None:
-    await message.answer(WELCOME, reply_markup=main_keyboard())
+async def start(message: Message, user: User) -> None:
+    await message.answer(WELCOME, reply_markup=main_keyboard_for(user))
 
 
 @router.message(Command("help"))
-async def help_command(message: Message) -> None:
-    await message.answer(HELP, reply_markup=main_keyboard())
+async def help_command(message: Message, user: User) -> None:
+    await message.answer(HELP, reply_markup=main_keyboard_for(user))

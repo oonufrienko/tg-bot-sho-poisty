@@ -12,9 +12,10 @@ from bot.db import repo
 from bot.db.models import Group, User
 from bot.keyboards.common import (
     BTN_GROUP,
+    BTN_STATS,
     GroupCB,
     MoveRecipesCB,
-    main_keyboard,
+    main_keyboard_for,
     move_recipes_keyboard,
 )
 from bot.services.openrouter_credits import fetch_remaining_credits
@@ -42,8 +43,6 @@ async def _group_overview(message: Message, session: AsyncSession, user: User) -
     actions.button(text="➕ Створити групу", callback_data=GroupCB(action="create"))
     actions.button(text="🔗 Запрошення", callback_data=GroupCB(action="invite"))
     actions.button(text="👥 Учасники", callback_data=GroupCB(action="members"))
-    if user.tg_user_id in get_settings().admin_ids:
-        actions.button(text="📊 Статистика", callback_data=GroupCB(action="stats"))
     actions.adjust(1)
     builder.attach(actions)
 
@@ -61,18 +60,13 @@ async def group_menu(message: Message, session: AsyncSession, user: User) -> Non
     await _group_overview(message, session, user)
 
 
-@router.callback_query(GroupCB.filter(F.action == "stats"))
-async def show_stats(
-    query: CallbackQuery, session: AsyncSession, user: User
-) -> None:
+@router.message(F.text == BTN_STATS)
+async def show_stats(message: Message, session: AsyncSession, user: User) -> None:
     settings = get_settings()
-    # Кнопку бачать лише адміни, але callback_data можна підробити —
-    # перевіряємо ще раз на сервері.
+    # Кнопку бачать лише адміни, але текст може надіслати будь-хто —
+    # перевіряємо на сервері.
     if user.tg_user_id not in settings.admin_ids:
-        await query.answer("Лише для адмінів", show_alert=True)
-        return
-    await query.answer()
-    if not isinstance(query.message, Message):
+        await message.answer("Лише для адмінів 🙂")
         return
 
     total_users = await repo.count_users(session)
@@ -86,7 +80,7 @@ async def show_stats(
     else:
         credits_line = "💰 OpenRouter: не використовується"
 
-    await query.message.answer(
+    await message.answer(
         f"📊 <b>Статистика</b>\n\n👥 Користувачів: {total_users}\n{credits_line}"
     )
 
@@ -156,7 +150,7 @@ async def create_group_finish(
     await message.answer(
         f"Групу <b>{escape(name)}</b> створено і зроблено активною 🎉\n\n"
         f"Запрошення для рідних (просто перешліть їм):\n{link}",
-        reply_markup=main_keyboard(),
+        reply_markup=main_keyboard_for(user),
     )
     await offer_move_recipes(message, session, user, prev_group_id, group)
 
