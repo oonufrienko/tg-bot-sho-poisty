@@ -50,7 +50,7 @@
     "semantic_hash": "6176c564ffc5f5ed934e257ea7ce4ddf"
   },
   "bot/handlers/group.py": {
-    "mtime": 1784357821.2988296,
+    "mtime": 1784380306.956405,
     "ast_hash": "6b50921309c462c510dd79d92650df9d",
     "semantic_hash": "6b50921309c462c510dd79d92650df9d"
   },
@@ -65,7 +65,7 @@
     "semantic_hash": "15810c53a695b31759fc324336303b1d"
   },
   "bot/handlers/start.py": {
-    "mtime": 1784357821.2982836,
+    "mtime": 1784380306.9574375,
     "ast_hash": "b34193fb8a8021548a1107bcf60cc953",
     "semantic_hash": "b34193fb8a8021548a1107bcf60cc953"
   },
@@ -75,7 +75,7 @@
     "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "bot/keyboards/common.py": {
-    "mtime": 1784357803.0697408,
+    "mtime": 1784380306.959784,
     "ast_hash": "8fb5f70b459c5519654f89f33d3ba127",
     "semantic_hash": "8fb5f70b459c5519654f89f33d3ba127"
   },
@@ -280,14 +280,14 @@
     "semantic_hash": "76d5ffcc52ceef1ac662126ba0dd13b3"
   },
   "INSTALL.md": {
-    "mtime": 1784316089.7582853,
-    "ast_hash": "717b77af08ab69c50348226462990607",
-    "semantic_hash": "717b77af08ab69c50348226462990607"
+    "mtime": 1784399727.117446,
+    "ast_hash": "a052182c29078315c56241f8ba787a86",
+    "semantic_hash": "a052182c29078315c56241f8ba787a86"
   },
   "RUNBOOK.md": {
-    "mtime": 1784357859.963785,
-    "ast_hash": "ec394184178b6d4544c099a889c0dc2c",
-    "semantic_hash": "ec394184178b6d4544c099a889c0dc2c"
+    "mtime": 1784399716.1898944,
+    "ast_hash": "9ac49a4e551db1339d0a909e91f50726",
+    "semantic_hash": "9ac49a4e551db1339d0a909e91f50726"
   },
   "alembic/versions/b3c41d92ae51_drop_diet_category.py": {
     "mtime": 1784356051.6560023,
@@ -300,7 +300,7 @@
     "semantic_hash": "cbd6a9b6117e4f265d89cbe2fddb45c7"
   },
   "tests/test_admin_stats.py": {
-    "mtime": 1784357847.7501266,
+    "mtime": 1784380306.9722168,
     "ast_hash": "7abe236d474f48fb4c5451ba41b53ba8",
     "semantic_hash": "7abe236d474f48fb4c5451ba41b53ba8"
   }
