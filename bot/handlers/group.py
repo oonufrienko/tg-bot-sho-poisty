@@ -7,6 +7,7 @@ from aiogram.types import CallbackQuery, Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from bot.config import get_settings
 from bot.db import repo
 from bot.db.models import Group, User
 from bot.keyboards.common import (
@@ -16,6 +17,7 @@ from bot.keyboards.common import (
     main_keyboard,
     move_recipes_keyboard,
 )
+from bot.services.openrouter_credits import fetch_remaining_credits
 
 router = Router(name="group")
 
@@ -40,6 +42,8 @@ async def _group_overview(message: Message, session: AsyncSession, user: User) -
     actions.button(text="➕ Створити групу", callback_data=GroupCB(action="create"))
     actions.button(text="🔗 Запрошення", callback_data=GroupCB(action="invite"))
     actions.button(text="👥 Учасники", callback_data=GroupCB(action="members"))
+    if user.tg_user_id in get_settings().admin_ids:
+        actions.button(text="📊 Статистика", callback_data=GroupCB(action="stats"))
     actions.adjust(1)
     builder.attach(actions)
 
@@ -55,6 +59,36 @@ async def _group_overview(message: Message, session: AsyncSession, user: User) -
 @router.message(F.text == BTN_GROUP)
 async def group_menu(message: Message, session: AsyncSession, user: User) -> None:
     await _group_overview(message, session, user)
+
+
+@router.callback_query(GroupCB.filter(F.action == "stats"))
+async def show_stats(
+    query: CallbackQuery, session: AsyncSession, user: User
+) -> None:
+    settings = get_settings()
+    # Кнопку бачать лише адміни, але callback_data можна підробити —
+    # перевіряємо ще раз на сервері.
+    if user.tg_user_id not in settings.admin_ids:
+        await query.answer("Лише для адмінів", show_alert=True)
+        return
+    await query.answer()
+    if not isinstance(query.message, Message):
+        return
+
+    total_users = await repo.count_users(session)
+    if settings.openrouter_api_key:
+        remaining = await fetch_remaining_credits(settings.openrouter_api_key)
+        credits_line = (
+            f"💰 OpenRouter: ${remaining:.2f}"
+            if remaining is not None
+            else "💰 OpenRouter: не вдалося отримати"
+        )
+    else:
+        credits_line = "💰 OpenRouter: не використовується"
+
+    await query.message.answer(
+        f"📊 <b>Статистика</b>\n\n👥 Користувачів: {total_users}\n{credits_line}"
+    )
 
 
 @router.callback_query(GroupCB.filter(F.action == "switch"))

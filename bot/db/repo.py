@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.db.models import (
@@ -16,6 +16,10 @@ from bot.db.models import (
 
 async def get_user(session: AsyncSession, tg_user_id: int) -> User | None:
     return await session.get(User, tg_user_id)
+
+
+async def count_users(session: AsyncSession) -> int:
+    return (await session.execute(select(func.count()).select_from(User))).scalar_one()
 
 
 async def ensure_user(session: AsyncSession, tg_user_id: int, name: str) -> User:
