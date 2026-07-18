@@ -64,8 +64,22 @@ docker compose up -d      # саме up -d, НЕ restart
 docker compose logs -f bot                        # логи
 docker compose logs bot | tail -30                # останнє, без стеження
 docker compose down                               # зупинити
-cp data/bot.db ~/backup-recipes-$(date +%F).db    # бекап бази рецептів
 ```
+
+## Бекап
+
+Автоматичний, щоночі о 3:00 — `~/backup-script/backup.sh` (спільний для
+кількох ботів на хості, поза цим репозиторієм): знімає `data/`, `.env`,
+`.env.keys`; для SQLite коректно згортає WAL перед пакуванням; шифрує
+(`age`) і вивантажує на Cloudflare R2. Збій — push у ntfy; пропущений
+запуск — dead-man switch на healthchecks.io.
+
+```bash
+tail -30 ~/backup-script/logs/backup_*.log   # останній прогін
+cat ~/backup-script/README.md                # повна інструкція, відновлення
+```
+
+Позачерговий бекап: `~/backup-script/backup.sh` (та сама команда, що й у кроні).
 
 ## Якщо щось не так
 
