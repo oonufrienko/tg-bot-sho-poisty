@@ -7,27 +7,39 @@ from aiogram.types import (
 )
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from bot.db.models import CATEGORIES
+from bot.config import get_settings
+from bot.db.models import CATEGORIES, User
 
 BTN_ADD = "➕ Додати рецепт"
 BTN_ASK = "🍽 Що приготувати?"
 BTN_MENU = "📅 Меню"
 BTN_MY_RECIPES = "📖 Мої рецепти"
 BTN_GROUP = "👨‍👩‍👧 Група"
+BTN_STATS = "📊 Статистика"
 
-MENU_BUTTONS = {BTN_ADD, BTN_ASK, BTN_MENU, BTN_MY_RECIPES, BTN_GROUP}
+MENU_BUTTONS = {BTN_ADD, BTN_ASK, BTN_MENU, BTN_MY_RECIPES, BTN_GROUP, BTN_STATS}
 
 
-def main_keyboard() -> ReplyKeyboardMarkup:
+def main_keyboard(is_admin: bool = False) -> ReplyKeyboardMarkup:
+    keyboard = [
+        [KeyboardButton(text=BTN_ADD), KeyboardButton(text=BTN_ASK)],
+        [KeyboardButton(text=BTN_MENU), KeyboardButton(text=BTN_MY_RECIPES)],
+        [KeyboardButton(text=BTN_GROUP)],
+    ]
+    if is_admin:
+        # Reply-клавіатура «прилипає» до чату, тож збирається персонально:
+        # адмін отримає цей рядок після наступного /start.
+        keyboard.append([KeyboardButton(text=BTN_STATS)])
     return ReplyKeyboardMarkup(
-        keyboard=[
-            [KeyboardButton(text=BTN_ADD), KeyboardButton(text=BTN_ASK)],
-            [KeyboardButton(text=BTN_MENU), KeyboardButton(text=BTN_MY_RECIPES)],
-            [KeyboardButton(text=BTN_GROUP)],
-        ],
+        keyboard=keyboard,
         resize_keyboard=True,
         input_field_placeholder="Надішліть рецепт або спитайте «що на вечерю?»",
     )
+
+
+def main_keyboard_for(user: User) -> ReplyKeyboardMarkup:
+    """Головне меню під конкретного користувача (адміни бачать «Статистика»)."""
+    return main_keyboard(user.tg_user_id in get_settings().admin_ids)
 
 
 class ConfirmCB(CallbackData, prefix="rc"):
@@ -49,7 +61,7 @@ class MenuCB(CallbackData, prefix="menu"):
 
 
 class GroupCB(CallbackData, prefix="grp"):
-    action: str  # switch | create | invite | members | stats
+    action: str  # switch | create | invite | members
     group_id: int = 0
 
 

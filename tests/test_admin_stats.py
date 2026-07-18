@@ -66,7 +66,24 @@ async def test_fetch_remaining_credits_none_on_malformed_json():
         assert await fetch_remaining_credits("sk", client) is None
 
 
+# --- головне меню: кнопка лише в адмінському варіанті -----------------------
+
+
+def test_main_keyboard_has_stats_row_for_admin_only():
+    from bot.keyboards.common import BTN_GROUP, BTN_STATS, main_keyboard
+
+    admin_rows = [[b.text for b in row] for row in main_keyboard(True).keyboard]
+    plain_rows = [[b.text for b in row] for row in main_keyboard(False).keyboard]
+    assert [BTN_STATS] in admin_rows
+    # окремим рядом одразу ПІД рядом із «Група»
+    assert admin_rows.index([BTN_STATS]) == admin_rows.index([BTN_GROUP]) + 1
+    assert [BTN_STATS] not in plain_rows
+
+
 # --- хендлер: гвард адмінства ----------------------------------------------
+
+
+sent: list[str] = []
 
 
 class _Msg(Message):
@@ -75,19 +92,8 @@ class _Msg(Message):
         return self
 
 
-sent: list[str] = []
-
-
-class _Query:
-    def __init__(self):
-        self.message = _Msg(
-            message_id=1, date=datetime.now(), chat=Chat(id=1, type="private")
-        )
-        self.alerts: list[str] = []
-
-    async def answer(self, text=None, show_alert=False):
-        if text:
-            self.alerts.append(text)
+def _msg() -> _Msg:
+    return _Msg(message_id=1, date=datetime.now(), chat=Chat(id=1, type="private"))
 
 
 @pytest.fixture
@@ -100,8 +106,8 @@ async def session():
     await engine.dispose()
 
 
-async def test_non_admin_gets_alert_even_with_forged_callback(session, monkeypatch):
-    """Кнопки не-адмін не бачить, але callback_data підробна — гвард на сервері."""
+async def test_non_admin_typing_the_button_text_is_refused(session, monkeypatch):
+    """Кнопки не-адмін не бачить, але текст можна надрукувати — гвард на сервері."""
     monkeypatch.setenv("BOT_TOKEN", "x")
     monkeypatch.setenv("OPENROUTER_API_KEY", "y")
     monkeypatch.setenv("ADMIN_USER_IDS", "999")
@@ -109,10 +115,8 @@ async def test_non_admin_gets_alert_even_with_forged_callback(session, monkeypat
     try:
         user = await repo.ensure_user(session, 1, "Не адмін")
         sent.clear()
-        query = _Query()
-        await show_stats(query, session, user)
-        assert query.alerts == ["Лише для адмінів"]
-        assert sent == []
+        await show_stats(_msg(), session, user)
+        assert sent == ["Лише для адмінів 🙂"]
     finally:
         get_settings.cache_clear()
 
@@ -134,7 +138,7 @@ async def test_admin_sees_user_count_and_credits(session, monkeypatch):
         admin = await repo.ensure_user(session, 1, "Адмін")
         await repo.ensure_user(session, 2, "Ще хтось")
         sent.clear()
-        await show_stats(_Query(), session, admin)
+        await show_stats(_msg(), session, admin)
         assert len(sent) == 1
         assert "Користувачів: 2" in sent[0]
         assert "$4.83" in sent[0]
