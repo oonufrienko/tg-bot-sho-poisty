@@ -4,6 +4,7 @@ from html import escape
 import json
 
 from aiogram import Bot, F, Router
+from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
@@ -44,6 +45,8 @@ AI_UNAVAILABLE = "Сервіс AI зараз недоступний, спроб�
 AI_RATE_LIMITED = "Перевищено ліміт запитів AI 🕐 Зачекайте хвилину і спробуйте ще раз."
 FOREIGN_RECIPE = "Ця страва з іншої групи — ви переключились. Спитайте мене заново 🙂"
 LIST_GONE = "Спочатку відкрийте «📖 Мої рецепти» → «Весь список» 🙂"
+# Усе повідомлення — саме номер зі списку (з крапкою, як його копіюють).
+NUMBER_ONLY = r"^\s*\d+\.?\s*$"
 
 
 class ListStates(StatesGroup):
@@ -167,15 +170,20 @@ def _meal_type(intent: QueryIntent) -> str | None:
     return None
 
 
+async def _send_photo(message: Message, recipe) -> None:
+    photo = next(
+        (m for m in recipe.media or [] if m.media_type == "photo"), None
+    )
+    if photo:
+        await message.answer_photo(photo.tg_file_id)
+
+
 async def show_dish(
     message: Message, state: FSMContext, recipe, shown_ids: list[int]
 ) -> None:
     await state.update_data(q_shown=shown_ids)
     await send_long(message, render_recipe(recipe), reply_markup=dish_keyboard(recipe.id))
-    if recipe.media:
-        photo = next((m for m in recipe.media if m.media_type == "photo"), None)
-        if photo:
-            await message.answer_photo(photo.tg_file_id)
+    await _send_photo(message, recipe)
 
 
 async def run_find_dish(
@@ -489,6 +497,33 @@ async def cancel_delete(query: CallbackQuery) -> None:
     await query.answer()
     if isinstance(query.message, Message):
         await query.message.edit_text("Добре, залишаю 👌")
+
+
+@router.message(StateFilter(None), F.text.regexp(NUMBER_ONLY))
+async def open_by_number(
+    message: Message, state: FSMContext, session: AsyncSession, user: User
+) -> None:
+    """Голе число після «Весь список» — показати рецепт із цим номером.
+
+    Фільтр навмисно вузький: спрацьовує, лише якщо все повідомлення — це число.
+    Текст рецепта з кількостями («500 г борошна, 2 яйця») сюди не потрапляє
+    і йде до free_text, як і раніше.
+    """
+    data = await state.get_data()
+    ids: list[int] = data.get("list_ids") or []
+    if not ids or user.active_group_id is None:
+        await message.answer(LIST_GONE)
+        return
+    recipe_id = _pick_by_number(message.text or "", ids)
+    if recipe_id is None:
+        await message.answer(f"Потрібен номер від 1 до {len(ids)}.")
+        return
+    recipe = await repo.get_recipe(session, recipe_id, user.active_group_id)
+    if recipe is None:
+        await message.answer(LIST_GONE)
+        return
+    await send_long(message, render_recipe(recipe))
+    await _send_photo(message, recipe)
 
 
 @router.message(F.text, ~F.text.startswith("/"))

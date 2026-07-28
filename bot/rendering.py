@@ -60,6 +60,7 @@ def render_recipe_list(recipes: list[Recipe]) -> tuple[str, list[int]]:
             ids.append(recipe.id)
             stars = f" {'⭐' * recipe.difficulty}" if recipe.difficulty else ""
             lines.append(f"{len(ids)}. {escape(recipe.title)}{stars}")
+    lines.append("\nВведіть номер страви, щоб побачити рецепт.")
     return "\n".join(lines), ids
 
 
