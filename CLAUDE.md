@@ -67,6 +67,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 Before every commit, reconcile each of these with the change:
 
 - **Docs.** [ARCHITECTURE.md](ARCHITECTURE.md) for layer or boundary changes, [README.md](README.md) for setup, commands, and env vars, this file for workflow rules.
+- **Changelog.** A dated entry at the top of [CHANGELOG.md](CHANGELOG.md), newest first, describing what changed for whoever uses or operates the bot — not a list of touched files. Skip it only when nothing observable changed (a pure refactor, a typo). One-off operations already run against production (data migrations, manual fixes) belong there too, with their result.
 - **Knowledge graph.** Re-run `/graphify` so `graphify-out/` reflects the new structure. A stale graph is worse than no graph: it answers questions confidently and wrongly.
 - **Tests.** New behavior gets a test; changed behavior gets its existing test updated, not deleted. `uv run pytest` green.
 - **User-facing instructions.** The `HELP` text in [bot/handlers/start.py](bot/handlers/start.py), button labels, and hint messages. If a user can read it, it's an interface and it can go stale.
