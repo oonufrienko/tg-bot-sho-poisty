@@ -60,12 +60,12 @@ async def main() -> None:
     llm: LLMClient
     if settings.openrouter_api_key:
         llm = OpenRouterClient(settings.openrouter_api_key, settings.openrouter_model)
-        logging.info("LLM: OpenRouter, модель %s", settings.openrouter_model)
     elif settings.gemini_api_key:
         llm = GeminiClient(settings.gemini_api_key, settings.gemini_model)
-        logging.info("LLM: Gemini API, модель %s", settings.gemini_model)
     else:
         raise SystemExit("Потрібен OPENROUTER_API_KEY або GEMINI_API_KEY у .env")
+    # Питаємо клієнта, а не конфіг — тоді лог і «Статистика» не розійдуться
+    logging.info("LLM: %s, модель %s", llm.provider, llm.model)
     dp = Dispatcher(storage=MemoryStorage(), llm=llm)
 
     dp.message.outer_middleware(AccessDbMiddleware())

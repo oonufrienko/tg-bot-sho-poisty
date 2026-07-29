@@ -18,6 +18,7 @@ from bot.keyboards.common import (
     main_keyboard_for,
     move_recipes_keyboard,
 )
+from bot.services.llm.base import LLMClient
 from bot.services.openrouter_credits import fetch_remaining_credits
 
 router = Router(name="group")
@@ -61,7 +62,9 @@ async def group_menu(message: Message, session: AsyncSession, user: User) -> Non
 
 
 @router.message(F.text == BTN_STATS)
-async def show_stats(message: Message, session: AsyncSession, user: User) -> None:
+async def show_stats(
+    message: Message, session: AsyncSession, user: User, llm: LLMClient
+) -> None:
     settings = get_settings()
     # Кнопку бачать лише адміни, але текст може надіслати будь-хто —
     # перевіряємо на сервері.
@@ -80,8 +83,14 @@ async def show_stats(message: Message, session: AsyncSession, user: User) -> Non
     else:
         credits_line = "💰 OpenRouter: не використовується"
 
+    # Провайдер поруч із моделлю: назви на кшталт «gemini-2.5-flash» і
+    # «google/gemini-3.1-flash-lite-preview» надто схожі, щоб зрозуміти з самої
+    # назви, чиїм каналом іде запит.
+    model_line = f"🤖 Модель: {escape(llm.provider)} · {escape(llm.model)}"
+
     await message.answer(
-        f"📊 <b>Статистика</b>\n\n👥 Користувачів: {total_users}\n{credits_line}"
+        f"📊 <b>Статистика</b>\n\n"
+        f"👥 Користувачів: {total_users}\n{credits_line}\n{model_line}"
     )
 
 

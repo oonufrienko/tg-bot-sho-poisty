@@ -100,6 +100,19 @@ class LLMQuotaError(LLMError):
 class LLMClient(ABC):
     """Абстракція над провайдером — щоб згодом замінити Gemini на Claude."""
 
+    # Питаємо саме клієнта, а не конфіг: у статистиці має бути модель, якою бот
+    # реально працює, а не та, яку можна вивести з .env, повторивши правило
+    # вибору провайдера з main.py.
+    @property
+    @abstractmethod
+    def provider(self) -> str:
+        """Через кого йдуть запити — для адмінської статистики."""
+
+    @property
+    @abstractmethod
+    def model(self) -> str:
+        """Модель, якою бот працює зараз."""
+
     @abstractmethod
     async def extract_recipe(
         self, text: str | None, files: list[tuple[bytes, str]]
