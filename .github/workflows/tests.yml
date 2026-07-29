@@ -26,5 +26,8 @@ jobs:
           # робочої копії не потрібен нікому.
           persist-credentials: false
       - uses: astral-sh/setup-uv@v5
-      - run: uv sync
-      - run: uv run pytest
+      # --locked: без нього uv сам оновив би uv.lock, якби pyproject.toml із ним
+      # розійшовся, і тести пройшли б проти версій, яких у репозиторії немає.
+      # Тепер забутий `uv lock` валить CI, а не проходить непоміченим.
+      - run: uv sync --locked
+      - run: uv run --locked pytest
