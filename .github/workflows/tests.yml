@@ -4,6 +4,12 @@ on:
   pull_request:
   workflow_call: # deploy.yml викликає цей самий job як гейт перед деплоєм
 
+# Тут, а не в job: накриває обидва входи — і pull_request, і виклик із deploy.yml.
+# Зараз у репозиторії токен і так лише на читання; рядок фіксує це у файлі, щоб
+# зміна налаштувань репозиторію колись не розширила права мовчки.
+permissions:
+  contents: read
+
 concurrency:
   group: tests-${{ github.ref }}
   # На PR новий пуш скасовує попередній прогін. Для виклику з deploy.yml — ні:
@@ -15,6 +21,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Після checkout тут лише uv sync і pytest — токен у .git/config
+          # робочої копії не потрібен нікому.
+          persist-credentials: false
       - uses: astral-sh/setup-uv@v5
       - run: uv sync
       - run: uv run pytest

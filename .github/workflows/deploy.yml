@@ -16,6 +16,9 @@ jobs:
 
   deploy:
     needs: test
+    # Ходить на сервер по SSH-секретах і до самого репозиторію не звертається,
+    # тож GITHUB_TOKEN тут не потрібен взагалі.
+    permissions: {}
     runs-on: ubuntu-latest
     timeout-minutes: 15 # docker build на 1 ГБ RAM буває повільним
     steps:
