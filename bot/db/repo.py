@@ -283,13 +283,43 @@ async def record_serve(
     meal_type: str | None,
     served_on: date | None = None,
 ) -> None:
+    """Записує «взяли страву». Повторне натискання «Беремо» нічого не додає.
+
+    Той самий запис — це страва + день + прийом їжі. Ту саму страву можна взяти
+    і на сніданок, і на вечерю: це два різні рядки, і в списку вони підписані
+    по-різному.
+
+    Перевірка тут, а не UNIQUE-індексом: у наявних базах дублі вже накопичились,
+    і створення індексу на них впало б. Плюс SQLite вважає NULL-и в UNIQUE
+    різними, а порожній meal_type — найчастіший випадок.
+    """
+    day = served_on or date.today()
+    # SQLAlchemy і з `== meal_type` зробив би `IS NULL`, коли значення None, але
+    # тримати найважливішу гілку на неявному перетворенні не варто — тут видно,
+    # що порожній meal_type шукається саме як NULL.
+    meal_filter = (
+        ServeHistory.meal_type.is_(None)
+        if meal_type is None
+        else ServeHistory.meal_type == meal_type
+    )
+    already = await session.execute(
+        select(ServeHistory.id).where(
+            ServeHistory.group_id == group_id,
+            ServeHistory.recipe_id == recipe_id,
+            ServeHistory.served_on == day,
+            meal_filter,
+        )
+    )
+    if already.first() is not None:
+        return
+
     session.add(
         ServeHistory(
             group_id=group_id,
             recipe_id=recipe_id,
             user_id=user_id,
             meal_type=meal_type,
-            served_on=served_on or date.today(),
+            served_on=day,
         )
     )
     await session.commit()
