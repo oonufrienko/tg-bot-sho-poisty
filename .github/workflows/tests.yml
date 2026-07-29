@@ -1,0 +1,20 @@
+name: Tests
+
+on:
+  pull_request:
+  workflow_call: # deploy.yml викликає цей самий job як гейт перед деплоєм
+
+concurrency:
+  group: tests-${{ github.ref }}
+  # На PR новий пуш скасовує попередній прогін. Для виклику з deploy.yml — ні:
+  # скасований тест зняв би гейт перед деплоєм.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync
+      - run: uv run pytest
