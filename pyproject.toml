@@ -15,7 +15,11 @@ dependencies = [
     "pydantic-settings>=2.3",
 ]
 
-[project.optional-dependencies]
+# Не extra, а група (PEP 735): uv ставить `dev` за замовчуванням, тож `uv sync`
+# і `uv run pytest` працюють без прапорців. З extra цього не було, і забутий
+# --extra dev не давав помилки — uv мовчки брав pytest із PATH, а той падав на
+# відсутньому sqlalchemy, вказуючи зовсім не туди.
+[dependency-groups]
 dev = ["pytest>=8", "pytest-asyncio>=0.24"]
 
 [build-system]
