@@ -10,16 +10,15 @@ concurrency:
   cancel-in-progress: false # деплої йдуть по черзі, не обриваються
 
 jobs:
+  # Ті самі кроки, що бігають на кожному PR — описані один раз у tests.yml.
   test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
-      - run: uv sync
-      - run: uv run pytest
+    uses: ./.github/workflows/tests.yml
 
   deploy:
     needs: test
+    # Ходить на сервер по SSH-секретах і до самого репозиторію не звертається,
+    # тож GITHUB_TOKEN тут не потрібен взагалі.
+    permissions: {}
     runs-on: ubuntu-latest
     timeout-minutes: 15 # docker build на 1 ГБ RAM буває повільним
     steps:
