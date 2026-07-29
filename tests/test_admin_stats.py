@@ -11,6 +11,7 @@ from bot.config import Settings, get_settings
 from bot.db import repo
 from bot.db.models import Base
 from bot.handlers.group import show_stats
+from bot.rendering import render_stats
 from bot.services.openrouter_credits import fetch_remaining_credits
 
 
@@ -64,6 +65,30 @@ async def test_fetch_remaining_credits_none_on_malformed_json():
         lambda r: httpx.Response(200, json={"data": {"whatever": 1}})
     ) as client:
         assert await fetch_remaining_credits("sk", client) is None
+
+
+# --- rendering.render_stats -------------------------------------------------
+
+
+def test_render_stats_shows_credits_and_model():
+    text = render_stats(7, True, 4.83, "OpenRouter", "google/gemini-3.1-flash-lite")
+    assert "Користувачів: 7" in text
+    assert "💰 OpenRouter: $4.83" in text
+    assert "🤖 Модель: OpenRouter · google/gemini-3.1-flash-lite" in text
+
+
+def test_render_stats_distinguishes_no_key_from_failed_request():
+    """Дві різні ситуації, які не можна плутати: ключа немає / баланс не дістали."""
+    no_key = render_stats(1, False, None, "Gemini API", "gemini-2.5-flash")
+    failed = render_stats(1, True, None, "OpenRouter", "x/y")
+    assert "не використовується" in no_key
+    assert "не вдалося отримати" in failed
+
+
+def test_render_stats_escapes_provider_and_model():
+    text = render_stats(1, False, None, "<b>", "модель<script>")
+    assert "&lt;b&gt;" in text
+    assert "<script>" not in text
 
 
 # --- головне меню: кнопка лише в адмінському варіанті -----------------------
