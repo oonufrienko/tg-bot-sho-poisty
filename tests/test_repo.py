@@ -1,3 +1,4 @@
+import asyncio
 from datetime import date, timedelta
 
 import pytest
@@ -126,6 +127,40 @@ async def test_same_dish_on_another_day_is_a_new_record(session):
     await _serve(session, user, recipe, served_on=date.today() - timedelta(days=1))
     await _serve(session, user, recipe, served_on=date.today())
     assert len(await repo.recent_served(session, user.active_group_id)) == 2
+
+
+async def test_two_simultaneous_taps_record_one_serve(tmp_path):
+    """Швидке подвійне натискання: aiogram веде апдейти паралельними задачами,
+    кожна зі своєю сесією. Перевірка окремим SELECT лишала б тут вікно.
+
+    База саме файлова: `sqlite+aiosqlite://` у пам'яті дає кожному з'єднанню
+    власну базу, і дві сесії просто не побачили б одна одну.
+    """
+    engine = create_async_engine(f"sqlite+aiosqlite:///{tmp_path / 'bot.db'}")
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    async with factory() as setup:
+        user, recipe = await _make_user_with_recipe(setup)
+        group_id, recipe_id = user.active_group_id, recipe.id
+
+    async def tap():
+        async with factory() as own_session:
+            await repo.record_serve(
+                own_session,
+                group_id=group_id,
+                recipe_id=recipe_id,
+                user_id=user.tg_user_id,
+                meal_type=None,
+                served_on=date.today(),
+            )
+
+    await asyncio.gather(tap(), tap())
+
+    async with factory() as check:
+        assert len(await repo.recent_served(check, group_id)) == 1
+    await engine.dispose()
 
 
 async def test_dedupe_keeps_the_seven_day_rule_working(session):
