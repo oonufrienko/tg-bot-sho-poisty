@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 
-from sqlalchemy import delete, func, select, update
+from sqlalchemy import delete, exists, func, insert, literal, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from bot.db.models import (
@@ -283,13 +283,46 @@ async def record_serve(
     meal_type: str | None,
     served_on: date | None = None,
 ) -> None:
-    session.add(
-        ServeHistory(
-            group_id=group_id,
-            recipe_id=recipe_id,
-            user_id=user_id,
-            meal_type=meal_type,
-            served_on=served_on or date.today(),
+    """Записує «взяли страву». Повторне натискання «Беремо» нічого не додає.
+
+    Той самий запис — це страва + день + прийом їжі. Ту саму страву можна взяти
+    і на сніданок, і на вечерю: це два різні рядки, і в списку вони підписані
+    по-різному.
+
+    Перевірка тут, а не UNIQUE-індексом: у наявних базах дублі вже накопичились,
+    і створення індексу на них впало б. Плюс SQLite вважає NULL-и в UNIQUE
+    різними, а порожній meal_type — найчастіший випадок.
+
+    Один запит, а не SELECT і потім INSERT: aiogram обробляє кожен апдейт
+    окремою задачею (`handle_as_tasks=True`) і кожна дістає власну сесію, тож
+    два швидкі натискання йдуть паралельно. Окрема перевірка лишила б вікно
+    рівно для того випадку, заради якого все це й робиться.
+    """
+    day = served_on or date.today()
+    # SQLAlchemy і з `== meal_type` зробив би `IS NULL`, коли значення None, але
+    # тримати найважливішу гілку на неявному перетворенні не варто — тут видно,
+    # що порожній meal_type шукається саме як NULL.
+    meal_filter = (
+        ServeHistory.meal_type.is_(None)
+        if meal_type is None
+        else ServeHistory.meal_type == meal_type
+    )
+    duplicate = exists().where(
+        ServeHistory.group_id == group_id,
+        ServeHistory.recipe_id == recipe_id,
+        ServeHistory.served_on == day,
+        meal_filter,
+    )
+    await session.execute(
+        insert(ServeHistory).from_select(
+            ["group_id", "recipe_id", "user_id", "meal_type", "served_on"],
+            select(
+                literal(group_id),
+                literal(recipe_id),
+                literal(user_id),
+                literal(meal_type),
+                literal(day),
+            ).where(~duplicate),
         )
     )
     await session.commit()

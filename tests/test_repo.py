@@ -1,3 +1,4 @@
+import asyncio
 from datetime import date, timedelta
 
 import pytest
@@ -83,6 +84,93 @@ async def test_delete_recipe_removes_serve_history(session):
     assert await repo.delete_recipe(session, recipe.id, user.active_group_id) == "Борщ"
     assert await repo.group_recipes(session, user.active_group_id) == []
     assert await repo.recently_served_ids(session, user.active_group_id, days=7) == set()
+
+
+async def _serve(session, user, recipe, meal_type="lunch", served_on=None):
+    await repo.record_serve(
+        session,
+        group_id=user.active_group_id,
+        recipe_id=recipe.id,
+        user_id=user.tg_user_id,
+        meal_type=meal_type,
+        served_on=served_on or date.today(),
+    )
+
+
+async def test_taking_the_same_dish_twice_records_it_once(session):
+    """«Беремо» натискають кілька разів — у списку має бути один запис."""
+    user, recipe = await _make_user_with_recipe(session)
+    await _serve(session, user, recipe)
+    await _serve(session, user, recipe)
+    await _serve(session, user, recipe)
+    assert len(await repo.recent_served(session, user.active_group_id)) == 1
+
+
+async def test_dish_taken_without_a_meal_is_also_recorded_once(session):
+    """Найчастіший випадок: страву взяли поза контекстом прийому їжі (NULL)."""
+    user, recipe = await _make_user_with_recipe(session)
+    await _serve(session, user, recipe, meal_type=None)
+    await _serve(session, user, recipe, meal_type=None)
+    assert len(await repo.recent_served(session, user.active_group_id)) == 1
+
+
+async def test_same_dish_for_two_meals_stays_two_records(session):
+    """Свідомо дозволено: та сама страва на сніданок і на вечерю — різні рядки."""
+    user, recipe = await _make_user_with_recipe(session)
+    await _serve(session, user, recipe, meal_type="breakfast")
+    await _serve(session, user, recipe, meal_type="dinner")
+    assert len(await repo.recent_served(session, user.active_group_id)) == 2
+
+
+async def test_same_dish_on_another_day_is_a_new_record(session):
+    user, recipe = await _make_user_with_recipe(session)
+    await _serve(session, user, recipe, served_on=date.today() - timedelta(days=1))
+    await _serve(session, user, recipe, served_on=date.today())
+    assert len(await repo.recent_served(session, user.active_group_id)) == 2
+
+
+async def test_two_simultaneous_taps_record_one_serve(tmp_path):
+    """Швидке подвійне натискання: aiogram веде апдейти паралельними задачами,
+    кожна зі своєю сесією. Перевірка окремим SELECT лишала б тут вікно.
+
+    База саме файлова: `sqlite+aiosqlite://` у пам'яті дає кожному з'єднанню
+    власну базу, і дві сесії просто не побачили б одна одну.
+    """
+    engine = create_async_engine(f"sqlite+aiosqlite:///{tmp_path / 'bot.db'}")
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    async with factory() as setup:
+        user, recipe = await _make_user_with_recipe(setup)
+        group_id, recipe_id = user.active_group_id, recipe.id
+
+    async def tap():
+        async with factory() as own_session:
+            await repo.record_serve(
+                own_session,
+                group_id=group_id,
+                recipe_id=recipe_id,
+                user_id=user.tg_user_id,
+                meal_type=None,
+                served_on=date.today(),
+            )
+
+    await asyncio.gather(tap(), tap())
+
+    async with factory() as check:
+        assert len(await repo.recent_served(check, group_id)) == 1
+    await engine.dispose()
+
+
+async def test_dedupe_keeps_the_seven_day_rule_working(session):
+    """Головне застереження: прибирання дублів не має зняти страву з-під заборони."""
+    user, recipe = await _make_user_with_recipe(session)
+    await _serve(session, user, recipe)
+    await _serve(session, user, recipe)
+    assert recipe.id in await repo.recently_served_ids(
+        session, user.active_group_id, days=7
+    )
 
 
 async def test_update_recipe_replaces_fields_and_categories(session):
