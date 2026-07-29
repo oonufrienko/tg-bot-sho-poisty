@@ -26,7 +26,13 @@ def main() -> int:
     parser.add_argument("--apply", action="store_true", help="записати зміни")
     args = parser.parse_args()
 
-    connection = sqlite3.connect(args.db)
+    # sqlite3.connect створює файл для неіснуючого шляху — dry-run має право
+    # тільки читати, тож перевіряємо базу до підключення.
+    db_path = Path(args.db)
+    if not db_path.is_file():
+        parser.error(f"База не знайдена: {db_path}")
+
+    connection = sqlite3.connect(db_path)
     rows = connection.execute("SELECT id, title FROM recipes ORDER BY id").fetchall()
     changes = [
         (recipe_id, title, normalize_title(title))

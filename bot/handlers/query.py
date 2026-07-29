@@ -522,7 +522,12 @@ async def open_by_number(
     if recipe is None:
         await message.answer(LIST_GONE)
         return
-    await send_long(message, render_recipe(recipe))
+    # Кнопки ті самі, що й у show_dish: рецепт має виглядати однаково, звідки б
+    # його не відкрили. Сам show_dish не викликаємо — він пише ще й q_shown,
+    # контекст пошуку, до якого номер зі списку не належить.
+    await send_long(
+        message, render_recipe(recipe), reply_markup=dish_keyboard(recipe.id)
+    )
     await _send_photo(message, recipe)
 
 

@@ -24,9 +24,11 @@ class _Msg(Message):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         object.__setattr__(self, "sent", [])
+        object.__setattr__(self, "markups", [])
 
     async def answer(self, text, reply_markup=None, **kw):
         self.sent.append(text)
+        self.markups.append(reply_markup)
         return self
 
     async def answer_photo(self, file_id, **kw):
@@ -40,7 +42,7 @@ def _msg(text=None) -> _Msg:
     )
 
 
-async def _add(session, group_id, title):
+async def _add(session, group_id, title, media=None):
     return await repo.add_recipe(
         session,
         group_id=group_id,
@@ -53,6 +55,7 @@ async def _add(session, group_id, title):
         calories=None,
         source_type="text",
         original_text=None,
+        media=media,
     )
 
 
@@ -67,8 +70,11 @@ async def env():
     )
     async with factory() as session:
         user = await repo.ensure_user(session, 1, "Тест")
+        # Борщ без фото, Плов із фото — щоб перевірити обидві гілки _send_photo.
         borsch = await _add(session, user.active_group_id, "Борщ")
-        plov = await _add(session, user.active_group_id, "Плов")
+        plov = await _add(
+            session, user.active_group_id, "Плов", media=[("file-plov", "photo")]
+        )
         await state.update_data(list_ids=[borsch.id, plov.id])
         yield SimpleNamespace(
             session=session, user=user, state=state, borsch=borsch, plov=plov
@@ -88,6 +94,26 @@ async def test_number_with_dot_works(env):
     message = _msg("1.")
     await q.open_by_number(message, env.state, env.session, env.user)
     assert "Борщ" in message.sent[0]
+
+
+async def test_recipe_with_photo_sends_it(env):
+    message = _msg("2")
+    await q.open_by_number(message, env.state, env.session, env.user)
+    assert "photo:file-plov" in message.sent
+
+
+async def test_recipe_without_photo_sends_only_text(env):
+    message = _msg("1")
+    await q.open_by_number(message, env.state, env.session, env.user)
+    assert not [item for item in message.sent if item.startswith("photo:")]
+
+
+async def test_number_opens_recipe_with_action_buttons(env):
+    """Рецепт по номеру має ті самі 🗑/✏️, що й знайдений пошуком."""
+    message = _msg("1")
+    await q.open_by_number(message, env.state, env.session, env.user)
+    # send_long чіпляє клавіатуру до останнього шматка тексту.
+    assert message.markups[-1] is not None
 
 
 async def test_number_out_of_range_hints_the_range(env):
