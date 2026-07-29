@@ -40,7 +40,7 @@
 Потрібен [uv](https://docs.astral.sh/uv/):
 
 ```bash
-uv sync --extra dev      # створить .venv і поставить залежності (Python 3.12 підтягне сам)
+uv sync                  # створить .venv і поставить залежності, разом із тестовими (Python 3.12 підтягне сам)
 uv run python -m bot.main
 ```
 
