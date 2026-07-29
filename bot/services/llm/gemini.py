@@ -20,6 +20,14 @@ class GeminiClient(LLMClient):
         self._client = genai.Client(api_key=api_key)
         self._model = model
 
+    @property
+    def provider(self) -> str:
+        return "Gemini API"
+
+    @property
+    def model(self) -> str:
+        return self._model
+
     async def _generate[T: BaseModel](
         self, contents: list, schema: type[T], temperature: float = 0.2
     ) -> T:

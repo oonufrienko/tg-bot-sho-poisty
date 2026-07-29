@@ -51,6 +51,14 @@ class OpenRouterClient(LLMClient):
         self._client = AsyncOpenAI(api_key=api_key, base_url=OPENROUTER_BASE_URL)
         self._model = model
 
+    @property
+    def provider(self) -> str:
+        return "OpenRouter"
+
+    @property
+    def model(self) -> str:
+        return self._model
+
     async def _generate[T: BaseModel](
         self, parts: list[dict], schema: type[T], temperature: float = 0.2
     ) -> T:

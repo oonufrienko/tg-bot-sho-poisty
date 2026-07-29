@@ -18,6 +18,8 @@ from bot.keyboards.common import (
     main_keyboard_for,
     move_recipes_keyboard,
 )
+from bot.rendering import render_stats
+from bot.services.llm.base import LLMClient
 from bot.services.openrouter_credits import fetch_remaining_credits
 
 router = Router(name="group")
@@ -61,7 +63,9 @@ async def group_menu(message: Message, session: AsyncSession, user: User) -> Non
 
 
 @router.message(F.text == BTN_STATS)
-async def show_stats(message: Message, session: AsyncSession, user: User) -> None:
+async def show_stats(
+    message: Message, session: AsyncSession, user: User, llm: LLMClient
+) -> None:
     settings = get_settings()
     # Кнопку бачать лише адміни, але текст може надіслати будь-хто —
     # перевіряємо на сервері.
@@ -70,18 +74,15 @@ async def show_stats(message: Message, session: AsyncSession, user: User) -> Non
         return
 
     total_users = await repo.count_users(session)
-    if settings.openrouter_api_key:
-        remaining = await fetch_remaining_credits(settings.openrouter_api_key)
-        credits_line = (
-            f"💰 OpenRouter: ${remaining:.2f}"
-            if remaining is not None
-            else "💰 OpenRouter: не вдалося отримати"
-        )
-    else:
-        credits_line = "💰 OpenRouter: не використовується"
+    uses_openrouter = bool(settings.openrouter_api_key)
+    remaining = (
+        await fetch_remaining_credits(settings.openrouter_api_key)
+        if uses_openrouter
+        else None
+    )
 
     await message.answer(
-        f"📊 <b>Статистика</b>\n\n👥 Користувачів: {total_users}\n{credits_line}"
+        render_stats(total_users, uses_openrouter, remaining, llm.provider, llm.model)
     )
 
 

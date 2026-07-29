@@ -113,6 +113,34 @@ def render_shopping_list(lines: list[str], days: int, persons: int | None = None
     return header + body + footer
 
 
+def render_stats(
+    total_users: int,
+    uses_openrouter: bool,
+    remaining_credits: float | None,
+    provider: str,
+    model: str,
+) -> str:
+    """Адмінська картка. Кредити: None — ключ є, але баланс не дістали.
+
+    Провайдер поруч із моделлю навмисно: «gemini-2.5-flash» і
+    «google/gemini-3.1-flash-lite-preview» надто схожі, щоб з самої назви
+    зрозуміти, чиїм каналом іде запит.
+    """
+    if not uses_openrouter:
+        credits = "💰 OpenRouter: не використовується"
+    elif remaining_credits is None:
+        credits = "💰 OpenRouter: не вдалося отримати"
+    else:
+        credits = f"💰 OpenRouter: ${remaining_credits:.2f}"
+
+    return (
+        "📊 <b>Статистика</b>\n\n"
+        f"👥 Користувачів: {total_users}\n"
+        f"{credits}\n"
+        f"🤖 Модель: {escape(provider)} · {escape(model)}"
+    )
+
+
 def render_extraction_card(
     title: str | None,
     ingredients: list[dict],

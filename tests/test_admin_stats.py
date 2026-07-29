@@ -11,6 +11,7 @@ from bot.config import Settings, get_settings
 from bot.db import repo
 from bot.db.models import Base
 from bot.handlers.group import show_stats
+from bot.rendering import render_stats
 from bot.services.openrouter_credits import fetch_remaining_credits
 
 
@@ -66,6 +67,30 @@ async def test_fetch_remaining_credits_none_on_malformed_json():
         assert await fetch_remaining_credits("sk", client) is None
 
 
+# --- rendering.render_stats -------------------------------------------------
+
+
+def test_render_stats_shows_credits_and_model():
+    text = render_stats(7, True, 4.83, "OpenRouter", "google/gemini-3.1-flash-lite")
+    assert "Користувачів: 7" in text
+    assert "💰 OpenRouter: $4.83" in text
+    assert "🤖 Модель: OpenRouter · google/gemini-3.1-flash-lite" in text
+
+
+def test_render_stats_distinguishes_no_key_from_failed_request():
+    """Дві різні ситуації, які не можна плутати: ключа немає / баланс не дістали."""
+    no_key = render_stats(1, False, None, "Gemini API", "gemini-2.5-flash")
+    failed = render_stats(1, True, None, "OpenRouter", "x/y")
+    assert "не використовується" in no_key
+    assert "не вдалося отримати" in failed
+
+
+def test_render_stats_escapes_provider_and_model():
+    text = render_stats(1, False, None, "<b>", "модель<script>")
+    assert "&lt;b&gt;" in text
+    assert "<script>" not in text
+
+
 # --- головне меню: кнопка лише в адмінському варіанті -----------------------
 
 
@@ -96,6 +121,14 @@ def _msg() -> _Msg:
     return _Msg(message_id=1, date=datetime.now(), chat=Chat(id=1, type="private"))
 
 
+class _Llm:
+    """Клієнт, якого статистика питає про модель. Реальні виклики їй не потрібні."""
+
+    def __init__(self, provider="OpenRouter", model="google/gemini-3.1-flash-lite-preview"):
+        self.provider = provider
+        self.model = model
+
+
 @pytest.fixture
 async def session():
     engine = create_async_engine("sqlite+aiosqlite://")
@@ -115,7 +148,7 @@ async def test_non_admin_typing_the_button_text_is_refused(session, monkeypatch)
     try:
         user = await repo.ensure_user(session, 1, "Не адмін")
         sent.clear()
-        await show_stats(_msg(), session, user)
+        await show_stats(_msg(), session, user, _Llm())
         assert sent == ["Лише для адмінів 🙂"]
     finally:
         get_settings.cache_clear()
@@ -138,9 +171,39 @@ async def test_admin_sees_user_count_and_credits(session, monkeypatch):
         admin = await repo.ensure_user(session, 1, "Адмін")
         await repo.ensure_user(session, 2, "Ще хтось")
         sent.clear()
-        await show_stats(_msg(), session, admin)
+        await show_stats(_msg(), session, admin, _Llm())
         assert len(sent) == 1
         assert "Користувачів: 2" in sent[0]
         assert "$4.83" in sent[0]
+        assert "OpenRouter · google/gemini-3.1-flash-lite-preview" in sent[0]
+    finally:
+        get_settings.cache_clear()
+
+
+async def test_model_line_comes_from_the_client_not_the_config(session, monkeypatch):
+    """Показуємо ту модель, якою бот працює, а не виведену з .env.
+
+    OPENROUTER_API_KEY тут заданий, тобто за конфігом вийшов би OpenRouter, —
+    але працює бот через Gemini, і саме це має бути в статистиці.
+    """
+    monkeypatch.setenv("BOT_TOKEN", "x")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-test")
+    monkeypatch.setenv("ADMIN_USER_IDS", "1")
+    get_settings.cache_clear()
+
+    async def no_credits(api_key, client=None):
+        return None
+
+    import bot.handlers.group as group_module
+
+    monkeypatch.setattr(group_module, "fetch_remaining_credits", no_credits)
+    try:
+        admin = await repo.ensure_user(session, 1, "Адмін")
+        sent.clear()
+        await show_stats(
+            _msg(), session, admin, _Llm(provider="Gemini API", model="gemini-2.5-flash")
+        )
+        assert "Gemini API · gemini-2.5-flash" in sent[0]
+        assert "OpenRouter ·" not in sent[0]
     finally:
         get_settings.cache_clear()
