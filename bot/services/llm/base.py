@@ -8,7 +8,9 @@
 from abc import ABC, abstractmethod
 from typing import Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+from bot.services.titles import normalize_title
 
 CategoryKey = Literal[
     "breakfast", "lunch", "dinner", "dessert", "salad", "general"
@@ -33,6 +35,13 @@ class RecipeExtraction(BaseModel):
     language: Optional[str] = None
     # Що не вдалося розпізнати — питання користувачу, нічого не вигадуємо
     missing_info: list[str] = Field(default_factory=list)
+
+    # Тут, а не в хендлері: картка підтвердження має показувати ту саму назву,
+    # що потрапить у базу — і для нового рецепта, і для «Доповнити»/правки.
+    @field_validator("title")
+    @classmethod
+    def _normalize_title(cls, value: str | None) -> str | None:
+        return normalize_title(value) if value else value
 
 
 IntentKey = Literal[

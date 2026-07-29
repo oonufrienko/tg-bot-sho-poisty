@@ -58,6 +58,11 @@ def test_numbering_is_sequential_and_matches_ids():
     assert ids == [22, 33, 11]
 
 
+def test_list_hints_how_to_open_a_recipe():
+    text, _ = render_recipe_list([make(1, "Плов")])
+    assert text.endswith("Введіть номер страви, щоб побачити рецепт.")
+
+
 def test_difficulty_rendered_as_stars():
     text, _ = render_recipe_list(
         [make(1, "Борщ", ["lunch"], difficulty=3), make(2, "Плов")]
